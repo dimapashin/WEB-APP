@@ -2,13 +2,14 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useAppStore } from "@/lib/store"
 import { useT, useLanguage } from "@/lib/i18n"
 import { CheckoutDatesScreen } from "./checkout-dates-screen"
+import { Languages } from "lucide-react"
 
 interface AuthScreenProps {
   onSuccess: () => void
@@ -24,6 +25,17 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
   const setGuest = useAppStore((state) => state.setGuest)
   const t = useT()
   const { language, setLanguage } = useLanguage()
+  const nameInputRef = useRef<HTMLInputElement>(null)
+  const roomInputRef = useRef<HTMLInputElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
+
+  const handleInputFocus = (inputRef: React.RefObject<HTMLInputElement>) => {
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.scrollIntoView({ behavior: "smooth", block: "center" })
+      }
+    }, 300) // Delay for keyboard animation
+  }
 
   const isValid = name.trim() && roomNumber.trim() && agreed
 
@@ -71,13 +83,16 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 relative" style={{ paddingTop: "max(1.5rem, env(safe-area-inset-top))" }}>
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 relative" style={{ paddingTop: "max(1.5rem, env(safe-area-inset-top))", scrollBehavior: "smooth" }}>
       <Button
         onClick={() => setLanguage(language === "ru" ? "en" : "ru")}
-        variant="ghost"
-        className="absolute top-6 right-6 text-foreground hover:text-primary h-8 w-8 p-0 font-semibold text-xs"
+        variant="outline"
+        size="icon"
+        className="absolute right-6 h-9 w-16 border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary font-semibold transition-all duration-200 shadow-sm z-10"
+        style={{ top: "max(1.5rem, env(safe-area-inset-top))" }}
       >
-        {language === "ru" ? "EN" : "RU"}
+        <Languages className="w-4 h-4 mr-1" />
+        <span className="text-xs">{language === "ru" ? "EN" : "RU"}</span>
       </Button>
       <div className="w-full max-w-sm space-y-8">
         <div className="text-center">
@@ -85,20 +100,24 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
           <p className="text-muted-foreground">{t("welcome")}</p>
         </div>
 
-        <form onSubmit={handleCredentialsSubmit} className="space-y-4">
+        <form ref={formRef} onSubmit={handleCredentialsSubmit} className="space-y-4" style={{ position: "relative" }}>
           <div>
             <Input
+              ref={nameInputRef}
               placeholder={t("auth.name_placeholder")}
               value={name}
               onChange={(e) => setName(e.target.value)}
+              onFocus={() => handleInputFocus(nameInputRef)}
               className="bg-card border-border text-foreground placeholder:text-muted-foreground h-12"
             />
           </div>
           <div>
             <Input
+              ref={roomInputRef}
               placeholder={t("auth.room_placeholder")}
               value={roomNumber}
               onChange={(e) => setRoomNumber(e.target.value.replace(/\D/g, ""))}
+              onFocus={() => handleInputFocus(roomInputRef)}
               inputMode="numeric"
               className={`bg-card border-border text-foreground placeholder:text-muted-foreground h-12 ${
                 error ? "border-destructive" : ""

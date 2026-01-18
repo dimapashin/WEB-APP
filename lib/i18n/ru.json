@@ -40,19 +40,76 @@
     "card": "Карта",
     "sbp": "СБП",
     "payment_unavailable": "К сожалению, функция онлайн-оплаты завтрака в данный момент в разработке. Приобрести завтрак можно на стойке ресепшен. Ваш заказ сохранен.",
-    "got_it": "Понятно"
+    "got_it": "Понятно",
+    "add_to_cart": "Добавить",
+    "cart": "Корзина",
+    "checkout_title": "Оформление заказа",
+    "delivery_date": "Дата доставки",
+    "payment_method": "Способ оплаты",
+    "card_payment": "Банковская карта",
+    "sbp_payment": "Система быстрых платежей (СБП)",
+    "sbp_description": "Быстрая оплата через СБП",
+    "total": "Итого",
+    "proceed_to_checkout": "Перейти к оплате",
+    "pay": "Оплатить"
   },
   "wakeup": {
     "title": "Пробуждение",
-    "back": "Назад"
+    "back": "Назад",
+    "alarm_set": "Будильник установлен!",
+    "will_call": "Позвоним в номер",
+    "at": "в",
+    "date": "Дата",
+    "time": "Время",
+    "comment_optional": "Комментарий (необязательно)",
+    "comment_placeholder": "Дополнительная информация",
+    "set_alarm": "Установить будильник",
+    "add_alarm": "Добавить будильник",
+    "alarms_set": "Установленные будильники"
   },
   "concierge": {
     "title": "Консьерж",
-    "back": "Назад"
+    "back": "Назад",
+    "taxi": "Такси",
+    "taxi_order": "Заказ такси",
+    "taxi_subtitle": "Заказать трансфер",
+    "restaurant": "Рестораны",
+    "restaurant_booking": "Бронь столика",
+    "restaurant_subtitle": "Забронировать столик",
+    "excursion": "Экскурсии",
+    "excursion_subtitle": "Обзорные и тематические",
+    "decoration": "Украшение",
+    "decoration_subtitle": "Оформление номера",
+    "destination": "Место назначения",
+    "destination_placeholder": "Например: Эрмитаж",
+    "guests": "Количество гостей",
+    "restaurant_name": "Название ресторана",
+    "request_sent": "Заявка отправлена!",
+    "will_contact": "Мы свяжемся с вами в ближайшее время",
+    "order_taxi": "Заказать такси",
+    "book_table": "Забронировать",
+    "service_unavailable": "Услуга временно недоступна",
+    "coming_soon": "Скоро"
   },
   "services_detail": {
     "title": "Дополнительные услуги",
-    "back": "Назад"
+    "back": "Назад",
+    "laundry": "Прачечная",
+    "laundry_subtitle": "Стирка и химчистка",
+    "iron": "Утюг и гладильная доска",
+    "iron_subtitle": "Работает с 9:00 до 18:00",
+    "iron_order": "Заказ утюга",
+    "supplies": "Расходники",
+    "supplies_subtitle": "Товары для комфорта",
+    "cleaning": "Уборка",
+    "cleaning_subtitle": "Дополнительная уборка",
+    "delivery_time": "Время доставки",
+    "available_time": "Доступно",
+    "order_at": "Заказать на",
+    "order_placed": "Заказ оформлен!",
+    "will_deliver": "Доставим в номер",
+    "service_unavailable": "Услуга временно недоступна",
+    "coming_soon": "Скоро"
   },
   "about": {
     "title": "Об отеле",
@@ -70,6 +127,31 @@
   "orders": {
     "title": "Заказы",
     "back": "Назад",
-    "no_orders": "У вас нет заказов"
+    "no_orders": "У вас нет заказов",
+    "my_orders": "Мои заказы",
+    "no_orders_yet": "У вас пока нет заказов",
+    "delete_order": "Удалить заказ?",
+    "delete_confirm": "Это действие нельзя отменить. Заказ будет удален безвозвратно.",
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "pending": "Ожидает",
+    "confirmed": "Подтверждён",
+    "completed": "Выполнен"
+  },
+  "common": {
+    "comment": "Комментарий",
+    "date": "Дата",
+    "time": "Время",
+    "amount": "Сумма",
+    "card_payment": "Visa, Mastercard"
+  },
+  "dates": {
+    "title": "Уточнение дат",
+    "guest": "Гость",
+    "room": "Комната",
+    "checkin_date": "Дата заезда",
+    "checkout_date": "Дата выезда",
+    "confirm": "Подтвердить",
+    "confirming": "Подтверждение..."
   }
 }

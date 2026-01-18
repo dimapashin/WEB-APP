@@ -5,7 +5,7 @@ import { ServiceCards } from "@/components/service-cards"
 import { useAppStore } from "@/lib/store"
 import { getGreeting } from "@/lib/weather"
 import { useT, useLanguage } from "@/lib/i18n"
-import { LogOut } from "lucide-react"
+import { LogOut, Languages } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface MainScreenProps {
@@ -39,10 +39,12 @@ export function MainScreen({
       <div className="px-4 py-4 flex items-center justify-center relative" style={{ paddingTop: "max(1.5rem, env(safe-area-inset-top))" }}>
         <Button
           onClick={() => setLanguage(language === "ru" ? "en" : "ru")}
-          variant="ghost"
-          className="absolute left-4 text-foreground hover:text-primary h-8 w-8 p-0 font-semibold text-xs"
+          variant="outline"
+          size="icon"
+          className="absolute left-4 h-9 w-16 border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary font-semibold transition-all duration-200 shadow-sm"
         >
-          {language === "ru" ? "EN" : "RU"}
+          <Languages className="w-4 h-4 mr-1" />
+          <span className="text-xs">{language === "ru" ? "EN" : "RU"}</span>
         </Button>
         <img src="/images/vidi-logo-beige.png" alt="VIDI" className="h-10" />
         <button

@@ -13,7 +13,7 @@ export const breakfastComplexes: BreakfastComplex[] = [
     name: "Омлет с топпингами",
     description: "Пышный омлет с выбором начинок: бекон, грибы, томаты, сыр",
     price: 1100,
-    image: "/images/d0-b7-d0-b0-d0-b2-d1-82-d1-80-d0-b0-d0-ba-201.png",
+    image: "/images/breakfast-omelet.jpg",
     items: [
       "Омлет из 3 яиц",
       "Бекон или колбаса",
@@ -29,7 +29,7 @@ export const breakfastComplexes: BreakfastComplex[] = [
     name: "Блины с соусами",
     description: "Тонкие блины со сметаной, медом и ягодным джемом",
     price: 1100,
-    image: "/images/d0-b7-d0-b0-d0-b2-d1-82-d1-80-d0-b0-d0-ba-202.png",
+    image: "/images/breakfast-pancakes.jpg",
     items: [
       "Блины (4 шт)",
       "Сметана",
@@ -45,7 +45,7 @@ export const breakfastComplexes: BreakfastComplex[] = [
     name: "Каша с ягодами",
     description: "Овсяная каша с семенами льна, свежими ягодами и бананом",
     price: 1100,
-    image: "/images/d0-b7-d0-b0-d0-b2-d1-82-d1-80-d0-b0-d0-ba-203.png",
+    image: "/images/breakfast-porridge.jpg",
     items: [
       "Овсяная каша",
       "Семена льна",

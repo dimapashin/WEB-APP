@@ -1,6 +1,6 @@
 "use client"
 
-import { ChevronLeft, MapPin, Phone, Mail, MessageCircle, Send, Instagram as Telegram } from "lucide-react"
+import { ChevronLeft, MapPin, Phone, Mail, MessageCircle, Send, MessageSquare } from "lucide-react"
 import { VidiLogo } from "@/components/ui/vidi-logo"
 import { Button } from "@/components/ui/button"
 import { useT } from "@/lib/i18n"
@@ -24,9 +24,9 @@ export function AboutScreen({ onBack }: AboutScreenProps) {
       label: "VK",
     },
     {
-      icon: Phone,
-      url: "https://wa.me/79213710184",
-      label: "WhatsApp",
+      icon: MessageSquare,
+      url: "https://max.me/79213710184",
+      label: "Max",
     },
   ]
 
@@ -90,8 +90,8 @@ export function AboutScreen({ onBack }: AboutScreenProps) {
               </div>
               <div>
                 <h3 className="font-medium text-foreground">{t("about.email")}</h3>
-                <a href="mailto:book@vidi-hotel.ru" className="text-primary text-sm mt-1 block hover:underline">
-                  book@vidi-hotel.ru
+                <a href="mailto:reception@vidi-hotel.ru" className="text-primary text-sm mt-1 block hover:underline">
+                  reception@vidi-hotel.ru
                 </a>
               </div>
             </div>

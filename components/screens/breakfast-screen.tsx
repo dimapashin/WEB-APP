@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingCart, Check, Info as InfoIcon, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -70,9 +70,9 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
   const [checkoutDate, setCheckoutDate] = useState("")
   const [paymentMethod, setPaymentMethod] = useState<"card" | "sbp" | null>(null)
   const [orderSuccess, setOrderSuccess] = useState(false)
-  const [isDragging, setIsDragging] = useState(false)
-  const [dragStart, setDragStart] = useState(0)
+  const [isScrolling, setIsScrolling] = useState(false)
   const carouselRef = useRef<HTMLDivElement>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
   const t = useT()
 
   const { cart, addToCart, updateCartQuantity, removeFromCart, clearCart, addOrder, guest } = useAppStore()
@@ -80,6 +80,40 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
   const selectedItem = breakfastComplexes[selectedIndex]
   const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0)
+
+  // Handle scroll to update selected index
+  useEffect(() => {
+    const container = scrollContainerRef.current
+    if (!container) return
+
+    const handleScroll = () => {
+      setIsScrolling(true)
+      const scrollLeft = container.scrollLeft
+      const cardWidth = container.clientWidth
+      const newIndex = Math.round(scrollLeft / cardWidth)
+      
+      if (newIndex !== selectedIndex && newIndex >= 0 && newIndex < breakfastComplexes.length) {
+        setSelectedIndex(newIndex)
+      }
+      
+      setTimeout(() => setIsScrolling(false), 150)
+    }
+
+    container.addEventListener("scroll", handleScroll, { passive: true })
+    return () => container.removeEventListener("scroll", handleScroll)
+  }, [selectedIndex])
+
+  // Scroll to selected index
+  const scrollToIndex = (index: number) => {
+    const container = scrollContainerRef.current
+    if (!container) return
+    
+    const cardWidth = container.clientWidth
+    container.scrollTo({
+      left: index * cardWidth,
+      behavior: "smooth",
+    })
+  }
 
   const handleAddToCart = () => {
     addToCart({
@@ -101,29 +135,24 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
     setShowCart(false)
   }
 
-  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
-    setIsDragging(true)
-    setDragStart("touches" in e ? e.touches[0].clientX : e.clientX)
+  const handlePrev = () => {
+    const newIndex = (selectedIndex - 1 + breakfastComplexes.length) % breakfastComplexes.length
+    setSelectedIndex(newIndex)
+    scrollToIndex(newIndex)
   }
 
-  const handleDragEnd = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!isDragging) return
-    const dragEnd = "changedTouches" in e ? e.changedTouches[0].clientX : (e as React.MouseEvent).clientX
-    const diff = dragStart - dragEnd
-
-    if (Math.abs(diff) > 50) {
-      if (diff > 0) {
-        // swipe left, go to next
-        setSelectedIndex((selectedIndex + 1) % breakfastComplexes.length)
-      } else {
-        // swipe right, go to prev
-        setSelectedIndex((selectedIndex - 1 + breakfastComplexes.length) % breakfastComplexes.length)
-      }
-    }
-    setIsDragging(false)
+  const handleNext = () => {
+    const newIndex = (selectedIndex + 1) % breakfastComplexes.length
+    setSelectedIndex(newIndex)
+    scrollToIndex(newIndex)
   }
 
-  const cartItem = cart.find((item) => item.id === selectedItem.id)
+  const handleDotClick = (index: number) => {
+    setSelectedIndex(index)
+    scrollToIndex(index)
+  }
+
+  const cartItem = selectedItem ? cart.find((item) => item.id === selectedItem.id) : undefined
 
   if (orderSuccess) {
     return (
@@ -162,107 +191,112 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
         </button>
       </div>
 
-      <div
-        ref={carouselRef}
-        className="relative h-80 overflow-hidden flex items-center justify-center py-4 cursor-grab active:cursor-grabbing"
-        onMouseDown={handleDragStart}
-        onMouseUp={handleDragEnd}
-        onTouchStart={handleDragStart}
-        onTouchEnd={handleDragEnd}
-      >
-        <div className="flex gap-4 px-4 relative w-full justify-center">
-          {breakfastComplexes.length > 0 && (
-            <motion.img
-              src={breakfastComplexes[(selectedIndex - 1 + breakfastComplexes.length) % breakfastComplexes.length].image}
-              alt="prev"
-              className="w-32 h-48 rounded-2xl object-cover opacity-40"
-              style={{ scale: 0.85 }}
-              draggable={false}
-            />
-          )}
-
-          <AnimatePresence mode="wait">
-            <motion.img
-              key={selectedItem.id}
-              src={selectedItem.image}
-              alt={selectedItem.name}
-              className="w-48 h-64 rounded-2xl object-cover shadow-xl"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.3 }}
-              draggable={false}
-            />
-          </AnimatePresence>
-
-          {breakfastComplexes.length > 0 && (
-            <motion.img
-              src={breakfastComplexes[(selectedIndex + 1) % breakfastComplexes.length].image}
-              alt="next"
-              className="w-32 h-48 rounded-2xl object-cover opacity-40"
-              style={{ scale: 0.85 }}
-              draggable={false}
-            />
-          )}
+      {/* Carousel */}
+      <div className="relative w-full overflow-hidden">
+        <div
+          ref={scrollContainerRef}
+          className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+          style={{
+            scrollBehavior: "smooth",
+            WebkitOverflowScrolling: "touch",
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+          }}
+        >
+          {breakfastComplexes.map((complex, index) => (
+            <div
+              key={complex.id}
+              className="w-full flex-shrink-0 snap-center px-4"
+            >
+              <div className="flex justify-center py-4">
+                <motion.img
+                  src={complex.image}
+                  alt={complex.name}
+                  className="w-full max-w-sm aspect-video rounded-2xl object-cover shadow-xl"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3 }}
+                  draggable={false}
+                  onError={(e) => {
+                    // Fallback for broken images
+                    const target = e.target as HTMLImageElement
+                    target.src = "/placeholder.svg"
+                  }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        {/* Navigation Buttons */}
+        <div className="absolute left-2 top-1/2 -translate-y-1/2 z-10">
+          <Button
+            onClick={handlePrev}
+            variant="outline"
+            size="icon"
+            className="w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm border-border hover:bg-primary/10 text-foreground"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </Button>
+        </div>
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10">
+          <Button
+            onClick={handleNext}
+            variant="outline"
+            size="icon"
+            className="w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm border-border hover:bg-primary/10 text-foreground"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </Button>
         </div>
       </div>
 
-      {/* Carousel Navigation */}
-      <div className="flex items-center justify-center gap-3 py-4">
-        <Button
-          onClick={() => setSelectedIndex((selectedIndex - 1 + breakfastComplexes.length) % breakfastComplexes.length)}
-          variant="outline"
-          className="w-10 h-10 p-0 flex items-center justify-center text-foreground border-border hover:bg-primary/10"
-        >
-          <ChevronLeft className="w-4 h-4" />
-        </Button>
-        <div className="flex gap-2">
-          {breakfastComplexes.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setSelectedIndex(index)}
-              className={`w-2 h-2 rounded-full transition-colors ${index === selectedIndex ? "bg-primary" : "bg-muted"}`}
-            />
-          ))}
-        </div>
-        <Button
-          onClick={() => setSelectedIndex((selectedIndex + 1) % breakfastComplexes.length)}
-          variant="outline"
-          className="w-10 h-10 p-0 flex items-center justify-center text-foreground border-border hover:bg-primary/10"
-        >
-          <ChevronRight className="w-4 h-4" />
-        </Button>
+      {/* Carousel Indicators */}
+      <div className="flex items-center justify-center gap-2 py-4">
+        {breakfastComplexes.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => handleDotClick(index)}
+            className={`h-2 rounded-full transition-all duration-300 ${
+              index === selectedIndex
+                ? "w-8 bg-primary"
+                : "w-2 bg-muted hover:bg-muted-foreground/50"
+            }`}
+            aria-label={`Go to slide ${index + 1}`}
+          />
+        ))}
       </div>
 
       {/* Content */}
       <div className="flex-1 px-4 pb-4">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={selectedItem.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.2 }}
-            className="space-y-4"
-          >
-            <div className="space-y-2">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1">
-                  <h2 className="text-xl font-semibold text-foreground">{selectedItem.name}</h2>
-                  <p className="text-muted-foreground mt-1 text-sm">{selectedItem.description}</p>
+        {selectedItem && (
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={selectedItem.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-4"
+            >
+              <div className="space-y-2">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1">
+                    <h2 className="text-xl font-semibold text-foreground">{selectedItem.name}</h2>
+                    <p className="text-muted-foreground mt-1 text-sm">{selectedItem.description}</p>
+                  </div>
                 </div>
+                <Button
+                  onClick={() => setShowDetailsModal(true)}
+                  variant="ghost"
+                  className="text-primary hover:text-primary/80 p-0 h-auto font-medium text-sm"
+                >
+                  {t("breakfast.details")} →
+                </Button>
               </div>
-              <Button
-                onClick={() => setShowDetailsModal(true)}
-                variant="ghost"
-                className="text-primary hover:text-primary/80 p-0 h-auto font-medium text-sm"
-              >
-                {t("breakfast.details")} →
-              </Button>
-            </div>
-            <div className="bg-card rounded-2xl p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-2xl font-semibold text-primary">{selectedItem.price} ₽</span>
+              <div className="bg-card rounded-2xl p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl font-semibold text-primary">{selectedItem.price} ₽</span>
                 {cartItem ? (
                   <div className="flex items-center gap-3">
                     <button
@@ -284,7 +318,7 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
                     onClick={handleAddToCart}
                     className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-6"
                   >
-                    Добавить
+                    {t("breakfast.add_to_cart")}
                   </Button>
                 )}
               </div>
@@ -300,7 +334,7 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
             onClick={() => setShowCart(true)}
             className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90"
           >
-            Корзина · {cartTotal} ₽
+            {t("breakfast.cart")} · {cartTotal} ₽
           </Button>
         </div>
       )}
@@ -324,7 +358,7 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="w-12 h-1 bg-muted rounded-full mx-auto mb-6" />
-              <h2 className="text-xl font-semibold text-foreground mb-4">Корзина</h2>
+              <h2 className="text-xl font-semibold text-foreground mb-4">{t("breakfast.cart")}</h2>
               <div className="space-y-4">
                 {cart.map((item) => (
                   <div key={item.id} className="flex items-center gap-4">
@@ -357,14 +391,14 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
               </div>
               <div className="mt-6 pt-4 border-t border-border">
                 <div className="flex justify-between mb-4">
-                  <span className="text-muted-foreground">Итого</span>
+                  <span className="text-muted-foreground">{t("breakfast.total")}</span>
                   <span className="text-xl font-semibold text-foreground">{cartTotal} ₽</span>
                 </div>
                 <Button
                   onClick={() => setShowCheckout(true)}
                   className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90"
                 >
-                  Перейти к оплате
+                  {t("breakfast.proceed_to_checkout")}
                 </Button>
               </div>
             </motion.div>
@@ -406,11 +440,11 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="w-12 h-1 bg-muted rounded-full mx-auto mb-6" />
-              <h2 className="text-xl font-semibold text-foreground mb-6">Оформление заказа</h2>
+              <h2 className="text-xl font-semibold text-foreground mb-6">{t("breakfast.checkout_title")}</h2>
 
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-foreground block mb-2">Дата доставки</label>
+                  <label className="text-sm font-medium text-foreground block mb-2">{t("breakfast.delivery_date")}</label>
                   <Input
                     type="date"
                     value={checkoutDate}
@@ -420,7 +454,7 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-foreground block mb-3">Способ оплаты</label>
+                  <label className="text-sm font-medium text-foreground block mb-3">{t("breakfast.payment_method")}</label>
                   <div className="space-y-2">
                     <button
                       onClick={() => setPaymentMethod("card")}
@@ -431,8 +465,8 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
                       }`}
                     >
                       <div className="text-left">
-                        <p className="font-medium">Банковская карта</p>
-                        <p className="text-sm text-muted-foreground">Visa, Mastercard</p>
+                        <p className="font-medium">{t("breakfast.card_payment")}</p>
+                        <p className="text-sm text-muted-foreground">{t("common.card_payment")}</p>
                       </div>
                     </button>
 
@@ -445,8 +479,8 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
                       }`}
                     >
                       <div className="text-left">
-                        <p className="font-medium">Система быстрых платежей (СБП)</p>
-                        <p className="text-sm text-muted-foreground">Быстрая оплата через СБП</p>
+                        <p className="font-medium">{t("breakfast.sbp_payment")}</p>
+                        <p className="text-sm text-muted-foreground">{t("breakfast.sbp_description")}</p>
                       </div>
                     </button>
                   </div>
@@ -454,7 +488,7 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
 
                 <div className="bg-background rounded-xl p-4 mt-6">
                   <div className="flex justify-between mb-2">
-                    <span className="text-muted-foreground">Сумма</span>
+                    <span className="text-muted-foreground">{t("breakfast.total")}</span>
                     <span className="font-medium text-foreground">{cartTotal} ₽</span>
                   </div>
                 </div>
@@ -464,7 +498,7 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
                   disabled={!checkoutDate || !paymentMethod}
                   className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                 >
-                  Оплатить {cartTotal} ₽
+                  {t("breakfast.pay")} {cartTotal} ₽
                 </Button>
               </div>
             </motion.div>
