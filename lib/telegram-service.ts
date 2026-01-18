@@ -1,0 +1,110 @@
+const BOT_TOKEN = "8594370320:AAG-BYVZXyzxn_U3Ie5Jv6w_H7JltfFTYEk"
+const RECEPTION_CHAT_ID = "-1003540162741"
+
+export interface NotificationData {
+  type: string
+  roomNumber: string
+  guestName: string
+  details: string
+  date?: string
+  time?: string
+  amount?: number
+  paymentMethod?: string
+}
+
+export async function sendToTelegram(orderData: NotificationData): Promise<boolean> {
+  const typeLabels: Record<string, string> = {
+    breakfast: "🥐 Завтрак",
+    taxi: "🚕 Такси",
+    restaurant: "🍽️ Ресторан",
+    wakeup: "⏰ Будильник",
+    iron: "👔 Утюг и гладильная доска",
+    supplies: "🛒 Доп. услуги",
+    wifi: "📶 Wi-Fi",
+    feedback: "⭐ Обратная связь",
+  }
+
+  const typeLabel = typeLabels[orderData.type] || orderData.type
+
+  let message = `🛎️ *НОВЫЙ ЗАКАЗ ОТ ГОСТЯ*\n`
+  message += `──────────────\n`
+  message += `• *Услуга:* ${typeLabel}\n`
+  message += `• *Номер комнаты:* ${orderData.roomNumber}\n`
+  message += `• *Имя гостя:* ${orderData.guestName}\n`
+  message += `• *Детали:* ${orderData.details}\n`
+  if (orderData.amount) {
+    message += `• *Сумма:* ${orderData.amount} ₽\n`
+  }
+  if (orderData.date) {
+    message += `• *Дата:* ${orderData.date}\n`
+  }
+  if (orderData.time) {
+    message += `• *Время:* ${orderData.time}\n`
+  }
+  if (orderData.paymentMethod) {
+    message += `• *Оплата:* ${orderData.paymentMethod === "card" ? "Банковская карта" : "СБП"}\n`
+  }
+  message += `• *Время:* ${new Date().toLocaleString("ru-RU")}\n`
+  message += `──────────────`
+
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: RECEPTION_CHAT_ID,
+        text: message,
+        parse_mode: "Markdown",
+      }),
+    })
+
+    const result = await response.json()
+    return result.ok === true
+  } catch (error) {
+    console.error("Ошибка отправки в Telegram:", error)
+    return false
+  }
+}
+
+// Функция для отправки опроса гостю (если у него есть telegram_id)
+export async function sendFeedbackRequest(
+  guestTelegramId: string,
+  guestName: string
+): Promise<boolean> {
+  const message = `Привет, ${guestName}!\nВы недавно останавливались в отеле VIDI.\nПожалуйста, оцените ваше пребывание по 10-балльной шкале.`
+
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: guestTelegramId,
+        text: message,
+        parse_mode: "Markdown",
+        reply_markup: {
+          inline_keyboard: [
+            [
+              { text: "1", callback_data: "rate_1" },
+              { text: "2", callback_data: "rate_2" },
+              { text: "3", callback_data: "rate_3" },
+              { text: "4", callback_data: "rate_4" },
+              { text: "5", callback_data: "rate_5" },
+            ],
+            [
+              { text: "6", callback_data: "rate_6" },
+              { text: "7", callback_data: "rate_7" },
+              { text: "8", callback_data: "rate_8" },
+              { text: "9", callback_data: "rate_9" },
+              { text: "10", callback_data: "rate_10" },
+            ],
+          ],
+        },
+      }),
+    })
+
+    return (await response.json()).ok === true
+  } catch (error) {
+    console.error("Ошибка отправки опроса:", error)
+    return false
+  }
+}

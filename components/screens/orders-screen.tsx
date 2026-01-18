@@ -49,8 +49,8 @@ export function OrdersScreen({ onBack }: OrdersScreenProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="flex items-center justify-between p-4" style={{ paddingTop: "max(1.5rem, env(safe-area-inset-top))" }}>
+    <div className="min-h-screen bg-background app-screen">
+      <div className="flex items-center justify-between p-4">
         <button onClick={onBack} className="p-2 -ml-2">
           <ArrowLeft className="w-6 h-6 text-foreground" />
         </button>

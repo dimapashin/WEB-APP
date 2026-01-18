@@ -83,7 +83,7 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 relative" style={{ paddingTop: "max(1.5rem, env(safe-area-inset-top))", scrollBehavior: "smooth" }}>
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 relative auth-screen" style={{ scrollBehavior: "smooth" }}>
       <Button
         onClick={() => setLanguage(language === "ru" ? "en" : "ru")}
         variant="outline"

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { useAppStore } from "@/lib/store"
 import { motion, AnimatePresence } from "framer-motion"
 import { Input } from "@/components/ui/input"
+import { sendToTelegram } from "@/lib/telegram-service"
 
 interface ServicesScreenProps {
   onBack: () => void
@@ -46,17 +47,32 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
     }
   }
 
-  const handleIronSubmit = () => {
+  const handleIronSubmit = async () => {
     const today = new Date()
     const dateStr = today.toISOString().split("T")[0]
 
+    const orderDetails = `Утюг и гладильная доска на ${selectedTime} (доступно с 9:00 до 18:00)`
+
     addOrder({
       type: "iron",
-      details: `Утюг и гладильная доска на ${selectedTime} (доступно с 9:00 до 18:00)`,
+      details: orderDetails,
       time: selectedTime,
       date: dateStr,
       status: "pending",
     })
+
+    // Send to Telegram
+    if (guest) {
+      await sendToTelegram({
+        type: "iron",
+        roomNumber: guest.roomNumber,
+        guestName: guest.name,
+        details: orderDetails,
+        date: dateStr,
+        time: selectedTime,
+      })
+    }
+
     setShowSuccess(true)
     setTimeout(() => {
       setShowSuccess(false)
@@ -80,8 +96,8 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
 
   if (activeService === "iron") {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <div className="flex items-center justify-between p-4" style={{ paddingTop: "max(1.5rem, env(safe-area-inset-top))" }}>
+      <div className="min-h-screen bg-background flex flex-col app-screen">
+        <div className="flex items-center justify-between p-4">
           <button onClick={() => setActiveService(null)} className="p-2 -ml-2">
             <ArrowLeft className="w-6 h-6 text-foreground" />
           </button>
@@ -116,8 +132,8 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
 
   if (activeService === "supplies") {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <div className="flex items-center justify-between p-4" style={{ paddingTop: "max(1.5rem, env(safe-area-inset-top))" }}>
+      <div className="min-h-screen bg-background flex flex-col app-screen">
+        <div className="flex items-center justify-between p-4">
           <button onClick={() => setActiveService(null)} className="p-2 -ml-2">
             <ArrowLeft className="w-6 h-6 text-foreground" />
           </button>
