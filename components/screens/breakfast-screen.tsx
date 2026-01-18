@@ -1,9 +1,7 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useRef, useEffect } from "react"
-import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingCart, Check, Info as InfoIcon, ArrowLeft } from "lucide-react"
+import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingCart, Info as InfoIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useAppStore } from "@/lib/store"
@@ -11,7 +9,6 @@ import { breakfastComplexes } from "@/lib/breakfast-data"
 import { BreakfastDetailsModal } from "@/components/breakfast-details-modal"
 import { motion, AnimatePresence } from "framer-motion"
 import { useT } from "@/lib/i18n"
-import { breakfastItems } from "@/lib/breakfast-data" // Import breakfastItems
 
 interface BreakfastScreenProps {
   onBack: () => void
@@ -71,15 +68,16 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
   const [paymentMethod, setPaymentMethod] = useState<"card" | "sbp" | null>(null)
   const [orderSuccess, setOrderSuccess] = useState(false)
   const [isScrolling, setIsScrolling] = useState(false)
-  const carouselRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const t = useT()
 
-  const { cart, addToCart, updateCartQuantity, removeFromCart, clearCart, addOrder, guest } = useAppStore()
+  // из useAppStore берем только то, что используется
+  const { cart, addToCart, updateCartQuantity, clearCart } = useAppStore()
 
   const selectedItem = breakfastComplexes[selectedIndex]
   const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0)
+  const cartItem = selectedItem ? cart.find((item) => item.id === selectedItem.id) : undefined
 
   // Handle scroll to update selected index
   useEffect(() => {
@@ -91,11 +89,11 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
       const scrollLeft = container.scrollLeft
       const cardWidth = container.clientWidth
       const newIndex = Math.round(scrollLeft / cardWidth)
-      
+
       if (newIndex !== selectedIndex && newIndex >= 0 && newIndex < breakfastComplexes.length) {
         setSelectedIndex(newIndex)
       }
-      
+
       setTimeout(() => setIsScrolling(false), 150)
     }
 
@@ -107,7 +105,7 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
   const scrollToIndex = (index: number) => {
     const container = scrollContainerRef.current
     if (!container) return
-    
+
     const cardWidth = container.clientWidth
     container.scrollTo({
       left: index * cardWidth,
@@ -116,6 +114,7 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
   }
 
   const handleAddToCart = () => {
+    if (!selectedItem) return
     addToCart({
       id: selectedItem.id,
       name: selectedItem.name,
@@ -128,7 +127,7 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
   const handleCheckoutSubmit = async () => {
     if (!checkoutDate || !paymentMethod) return
 
-    // Show payment unavailable notification instead of processing payment
+    // Show payment unavailable notification instead of real payment
     setShowPaymentNotification(true)
     clearCart()
     setShowCheckout(false)
@@ -152,27 +151,28 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
     scrollToIndex(index)
   }
 
-  const cartItem = selectedItem ? cart.find((item) => item.id === selectedItem.id) : undefined
-
   if (orderSuccess) {
     return (
       <>
-      <PaymentNotification
-        isOpen={showPaymentNotification}
-        onClose={() => {
-          setShowPaymentNotification(false)
-          onBack()
-        }}
-      />
-      <div className="min-h-screen bg-background" />
-    </>
+        <PaymentNotification
+          isOpen={showPaymentNotification}
+          onClose={() => {
+            setShowPaymentNotification(false)
+            onBack()
+          }}
+        />
+        <div className="min-h-screen bg-background" />
+      </>
     )
   }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between p-4" style={{ paddingTop: `max(1.5rem, env(safe-area-inset-top))` }}>
+      <div
+        className="flex items-center justify-between p-4"
+        style={{ paddingTop: `max(1.5rem, env(safe-area-inset-top))` }}
+      >
         <Button
           onClick={onBack}
           variant="ghost"
@@ -204,10 +204,7 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
           }}
         >
           {breakfastComplexes.map((complex, index) => (
-            <div
-              key={complex.id}
-              className="w-full flex-shrink-0 snap-center px-4"
-            >
+            <div key={complex.id} className="w-full flex-shrink-0 snap-center px-4">
               <div className="flex justify-center py-4">
                 <motion.img
                   src={complex.image}
@@ -218,7 +215,6 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
                   transition={{ duration: 0.3 }}
                   draggable={false}
                   onError={(e) => {
-                    // Fallback for broken images
                     const target = e.target as HTMLImageElement
                     target.src = "/placeholder.svg"
                   }}
@@ -227,7 +223,7 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
             </div>
           ))}
         </div>
-        
+
         {/* Navigation Buttons */}
         <div className="absolute left-2 top-1/2 -translate-y-1/2 z-10">
           <Button
@@ -267,7 +263,7 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
         ))}
       </div>
 
-      {/* Content */}
+      {/* Content + Add to Cart */}
       <div className="flex-1 px-4 pb-4">
         {selectedItem && (
           <AnimatePresence mode="wait">
@@ -294,37 +290,39 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
                   {t("breakfast.details")} →
                 </Button>
               </div>
+
               <div className="bg-card rounded-2xl p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-2xl font-semibold text-primary">{selectedItem.price} ₽</span>
-                {cartItem ? (
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => updateCartQuantity(cartItem.id, cartItem.quantity - 1)}
-                      className="w-10 h-10 rounded-full bg-muted flex items-center justify-center"
+                  {cartItem ? (
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => updateCartQuantity(cartItem.id, cartItem.quantity - 1)}
+                        className="w-10 h-10 rounded-full bg-muted flex items-center justify-center"
+                      >
+                        <Minus className="w-4 h-4 text-foreground" />
+                      </button>
+                      <span className="w-6 text-center text-foreground font-medium">{cartItem.quantity}</span>
+                      <button
+                        onClick={() => updateCartQuantity(cartItem.id, cartItem.quantity + 1)}
+                        className="w-10 h-10 rounded-full bg-primary flex items-center justify-center"
+                      >
+                        <Plus className="w-4 h-4 text-primary-foreground" />
+                      </button>
+                    </div>
+                  ) : (
+                    <Button
+                      onClick={handleAddToCart}
+                      className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-6"
                     >
-                      <Minus className="w-4 h-4 text-foreground" />
-                    </button>
-                    <span className="w-6 text-center text-foreground font-medium">{cartItem.quantity}</span>
-                    <button
-                      onClick={() => updateCartQuantity(cartItem.id, cartItem.quantity + 1)}
-                      className="w-10 h-10 rounded-full bg-primary flex items-center justify-center"
-                    >
-                      <Plus className="w-4 h-4 text-primary-foreground" />
-                    </button>
-                  </div>
-                ) : (
-                  <Button
-                    onClick={handleAddToCart}
-                    className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-6"
-                  >
-                    {t("breakfast.add_to_cart")}
-                  </Button>
-                )}
+                      {t("breakfast.add_to_cart")}
+                    </Button>
+                  )}
+                </div>
               </div>
-            </div>
-          </motion.div>
-        </AnimatePresence>
+            </motion.div>
+          </AnimatePresence>
+        )}
       </div>
 
       {/* Cart Summary */}
@@ -422,6 +420,7 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
         }}
       />
 
+      {/* Checkout Modal */}
       <AnimatePresence>
         {showCheckout && (
           <motion.div
@@ -444,7 +443,9 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
 
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-foreground block mb-2">{t("breakfast.delivery_date")}</label>
+                  <label className="text-sm font-medium text-foreground block mb-2">
+                    {t("breakfast.delivery_date")}
+                  </label>
                   <Input
                     type="date"
                     value={checkoutDate}
@@ -454,7 +455,9 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-foreground block mb-3">{t("breakfast.payment_method")}</label>
+                  <label className="text-sm font-medium text-foreground block mb-3">
+                    {t("breakfast.payment_method")}
+                  </label>
                   <div className="space-y-2">
                     <button
                       onClick={() => setPaymentMethod("card")}
