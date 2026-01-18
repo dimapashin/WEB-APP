@@ -1,0 +1,75 @@
+{
+  "welcome": "Welcome",
+  "auth": {
+    "name_placeholder": "Your name",
+    "room_placeholder": "Room number",
+    "invalid_room": "Invalid room number",
+    "agree": "I agree with",
+    "privacy_policy": "privacy policy",
+    "enter": "Sign In",
+    "entering": "Signing in..."
+  },
+  "main": {
+    "greeting_morning": "Good morning",
+    "greeting_afternoon": "Good afternoon",
+    "greeting_evening": "Good evening",
+    "room": "Room",
+    "logout": "Logout"
+  },
+  "quick_actions": {
+    "reception": "Reception",
+    "wakeup": "Wake-up Call",
+    "orders": "Orders",
+    "about": "About Hotel"
+  },
+  "services": {
+    "breakfast": "Breakfast",
+    "concierge": "Concierge",
+    "services": "Services",
+    "information": "Information"
+  },
+  "breakfast": {
+    "title": "Breakfast",
+    "back": "Back",
+    "select": "Select",
+    "details": "Details",
+    "complex_1": "Complex 1",
+    "complex_2": "Complex 2",
+    "complex_3": "Complex 3",
+    "checkout": "Checkout",
+    "card": "Card",
+    "sbp": "SBP",
+    "payment_unavailable": "Unfortunately, the online breakfast payment feature is under development. You can purchase breakfast at the reception desk. Your order has been saved.",
+    "got_it": "Got it"
+  },
+  "wakeup": {
+    "title": "Wake-up Call",
+    "back": "Back"
+  },
+  "concierge": {
+    "title": "Concierge",
+    "back": "Back"
+  },
+  "services_detail": {
+    "title": "Additional Services",
+    "back": "Back"
+  },
+  "about": {
+    "title": "About Hotel",
+    "back": "Back",
+    "description": "Apartment Hotel in the Center of Saint Petersburg",
+    "phone": "Phone",
+    "email": "Email",
+    "follow_us": "Follow Us"
+  },
+  "information": {
+    "title": "Information",
+    "back": "Back",
+    "coming_soon": "This section is under development. Here you will find useful information for guests: area map, hotel rules, transportation and more."
+  },
+  "orders": {
+    "title": "Orders",
+    "back": "Back",
+    "no_orders": "You have no orders"
+  }
+}
