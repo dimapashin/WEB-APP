@@ -35,29 +35,27 @@ export function MainScreen({
   const { language, setLanguage } = useLanguage()
 
   return (
-    <div className="min-h-screen bg-background app-screen">
-      <div className="px-4 py-4 flex items-center justify-center relative" style={{ paddingTop: "calc(60px + 0px)" }}>
+    <div className="min-h-screen bg-background">
+      <div className="px-4 py-4 flex items-center justify-center relative" style={{ paddingTop: "max(1.5rem, env(safe-area-inset-top))" }}>
         <Button
           onClick={() => setLanguage(language === "ru" ? "en" : "ru")}
           variant="outline"
           size="icon"
           className="absolute left-4 h-9 w-16 border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary font-semibold transition-all duration-200 shadow-sm"
-          style={{ bottom: "0px" }}
         >
           <Languages className="w-4 h-4 mr-1" />
           <span className="text-xs">{language === "ru" ? "EN" : "RU"}</span>
         </Button>
-        <img src="/images/vidi-logo-beige.png" alt="VIDI" className="h-12" style={{ marginBottom: "40px" }} />
+        <img src="/images/vidi-logo-beige.png" alt="VIDI" className="h-10" />
         <button
           onClick={onLogout}
           className="absolute right-4 p-2 text-foreground hover:text-primary transition-colors"
-          style={{ bottom: "0px" }}
         >
           <LogOut className="w-5 h-5" />
         </button>
       </div>
 
-      <div className="px-4 pb-6 space-y-6" style={{ marginTop: "40px" }}>
+      <div className="px-4 pb-6 space-y-6">
         <div className="space-y-4">
           <div className="flex justify-between items-start gap-4">
             <h1 className="text-2xl font-semibold text-foreground">

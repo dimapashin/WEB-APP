@@ -9,7 +9,6 @@ import { breakfastComplexes } from "@/lib/breakfast-data"
 import { BreakfastDetailsModal } from "@/components/breakfast-details-modal"
 import { motion, AnimatePresence } from "framer-motion"
 import { useT } from "@/lib/i18n"
-import { sendToTelegram } from "@/lib/telegram-service"
 
 interface BreakfastScreenProps {
   onBack: () => void
@@ -73,14 +72,14 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
   const t = useT()
 
   // из useAppStore берем только то, что используется
-  const { cart, addToCart, updateCartQuantity, clearCart, guest } = useAppStore()
+  const { cart, addToCart, updateCartQuantity, clearCart } = useAppStore()
 
   const selectedItem = breakfastComplexes[selectedIndex]
   const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0)
   const cartItem = selectedItem ? cart.find((item) => item.id === selectedItem.id) : undefined
 
-  // Handle scroll to update selected index (simple scroll, no infinite loop)
+  // Handle scroll to update selected index
   useEffect(() => {
     const container = scrollContainerRef.current
     if (!container) return
@@ -99,11 +98,10 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
     }
 
     container.addEventListener("scroll", handleScroll, { passive: true })
-
     return () => container.removeEventListener("scroll", handleScroll)
   }, [selectedIndex])
 
-  // Scroll to selected index (for dots navigation)
+  // Scroll to selected index
   const scrollToIndex = (index: number) => {
     const container = scrollContainerRef.current
     if (!container) return
@@ -113,7 +111,6 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
       left: index * cardWidth,
       behavior: "smooth",
     })
-    setSelectedIndex(index)
   }
 
   const handleAddToCart = () => {
@@ -129,38 +126,6 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
 
   const handleCheckoutSubmit = async () => {
     if (!checkoutDate || !paymentMethod) return
-
-    // Check if date is within guest's stay period
-    if (guest?.checkInDate && guest?.checkoutDate) {
-      const selectedDate = new Date(checkoutDate)
-      const checkIn = new Date(guest.checkInDate)
-      const checkout = new Date(guest.checkoutDate)
-      
-      // Set time to 00:00:00 for comparison
-      selectedDate.setHours(0, 0, 0, 0)
-      checkIn.setHours(0, 0, 0, 0)
-      checkout.setHours(0, 0, 0, 0)
-
-      if (selectedDate < checkIn || selectedDate >= checkout) {
-        alert("❌ Вы не проживаете в отеле в эти даты. Пожалуйста, выберите дату в период вашего проживания.")
-        return
-      }
-    }
-
-    const cartItems = cart.map((item) => `${item.name} x${item.quantity}`).join(", ")
-
-    // Send to Telegram
-    if (guest) {
-      await sendToTelegram({
-        type: "breakfast",
-        roomNumber: guest.roomNumber,
-        guestName: guest.name,
-        details: `Завтраки: ${cartItems}. Дата: ${checkoutDate}`,
-        date: checkoutDate,
-        amount: cartTotal,
-        paymentMethod: paymentMethod,
-      })
-    }
 
     // Show payment unavailable notification instead of real payment
     setShowPaymentNotification(true)
@@ -182,6 +147,7 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
   }
 
   const handleDotClick = (index: number) => {
+    setSelectedIndex(index)
     scrollToIndex(index)
   }
 
@@ -201,9 +167,12 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col app-screen breakfast-screen">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between p-4">
+      <div
+        className="flex items-center justify-between p-4"
+        style={{ paddingTop: `max(1.5rem, env(safe-area-inset-top))` }}
+      >
         <Button
           onClick={onBack}
           variant="ghost"
@@ -475,20 +444,18 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
               <div className="space-y-4">
                 <div>
                   <label className="text-sm font-medium text-foreground block mb-2">
-                    Дата
+                    {t("breakfast.delivery_date")}
                   </label>
                   <Input
                     type="date"
                     value={checkoutDate}
                     onChange={(e) => setCheckoutDate(e.target.value)}
-                    className="bg-background border-border text-foreground h-12 w-full"
-                    min={guest?.checkInDate || undefined}
-                    max={guest?.checkoutDate ? new Date(new Date(guest.checkoutDate).getTime() - 86400000).toISOString().split('T')[0] : undefined}
+                    className="bg-background border-border text-foreground h-12"
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-foreground block mb-2">
+                  <label className="text-sm font-medium text-foreground block mb-3">
                     {t("breakfast.payment_method")}
                   </label>
                   <div className="space-y-2">

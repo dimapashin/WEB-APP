@@ -1,14 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { ArrowLeft, Car, UtensilsCrossed, Map, Heart, Check, AlertCircle, MapPin, Clock, X } from "lucide-react"
+import { ArrowLeft, Car, UtensilsCrossed, Map, Heart, Check, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Checkbox } from "@/components/ui/checkbox"
 import { useAppStore } from "@/lib/store"
 import { motion, AnimatePresence } from "framer-motion"
-import { sendToTelegram } from "@/lib/telegram-service"
-import { tours, decorations, type Tour, type Decoration } from "@/lib/tours-decorations-data"
 
 interface ConciergeScreenProps {
   onBack: () => void
@@ -16,45 +13,19 @@ interface ConciergeScreenProps {
 
 type ServiceType = "taxi" | "restaurant" | "excursion" | "decoration" | null
 
-const POPULAR_DESTINATIONS = [
-  { name: "Аэропорт Пулково (LED)", icon: "✈️", time: "30 мин" },
-  { name: "Московский вокзал", icon: "🚂", time: "15 мин" },
-  { name: "Эрмитаж", icon: "🏛️", time: "10 мин" },
-  { name: "Петропавловская крепость", icon: "🏰", time: "12 мин" },
-  { name: "Невский проспект", icon: "🛍️", time: "8 мин" },
-  { name: "Мариинский театр", icon: "🎭", time: "18 мин" },
-  { name: "Лахта Центр", icon: "🏙️", time: "25 мин" },
-  { name: "Крестовский остров", icon: "⚽", time: "20 мин" },
-]
-
-const POPULAR_RESTAURANTS = [
-  { name: "Cococo", icon: "🍽️", cuisine: "Русская кухня", rating: "4.8" },
-  { name: "Mansarda", icon: "🍷", cuisine: "Европейская", rating: "4.7" },
-  { name: "Ginza Project", icon: "🍣", cuisine: "Японская", rating: "4.6" },
-  { name: "Terrassa", icon: "🌆", cuisine: "Европейская", rating: "4.9" },
-  { name: "Palkin", icon: "🥂", cuisine: "Русская кухня", rating: "4.8" },
-  { name: "Bellevue", icon: "🍾", cuisine: "Французская", rating: "4.7" },
-]
-
 export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
   const [activeService, setActiveService] = useState<ServiceType>(null)
   const [taxiDate, setTaxiDate] = useState("")
-  const [taxiTime, setTaxiTime] = useState("10:00")
+  const [taxiTime, setTaxiTime] = useState("")
   const [taxiAddress, setTaxiAddress] = useState("")
-  const [taxiSuggestions, setTaxiSuggestions] = useState<string[]>([])
   const [taxiComment, setTaxiComment] = useState("")
-  const [needsChildSeat, setNeedsChildSeat] = useState(false)
   const [restaurantName, setRestaurantName] = useState("")
-  const [restaurantSuggestions, setRestaurantSuggestions] = useState<string[]>([])
   const [restaurantGuests, setRestaurantGuests] = useState("")
   const [restaurantDate, setRestaurantDate] = useState("")
-  const [restaurantTime, setRestaurantTime] = useState("19:00")
+  const [restaurantTime, setRestaurantTime] = useState("")
   const [showSuccess, setShowSuccess] = useState(false)
   const [showUnavailable, setShowUnavailable] = useState(false)
   const { addOrder, guest } = useAppStore()
-
-  const [selectedTour, setSelectedTour] = useState<Tour | null>(null)
-  const [selectedDecoration, setSelectedDecoration] = useState<Decoration | null>(null)
 
   const services = [
     { id: "taxi", icon: Car, title: "Такси", subtitle: "Заказать трансфер", working: true },
@@ -64,14 +35,6 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
   ]
 
   const handleServiceClick = (serviceId: string, working: boolean) => {
-    if (serviceId === "excursion") {
-      setActiveService("excursion")
-      return
-    }
-    if (serviceId === "decoration") {
-      setActiveService("decoration")
-      return
-    }
     if (!working) {
       setShowUnavailable(true)
       setTimeout(() => setShowUnavailable(false), 2000)
@@ -80,69 +43,33 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
     setActiveService(serviceId as ServiceType)
   }
 
-  const handleTaxiSubmit = async () => {
-    if (!taxiDate || !taxiTime || !taxiAddress) return
-
-    const orderDetails = `Адрес: ${taxiAddress}, Время: ${taxiTime}${needsChildSeat ? ", Детское кресло: да" : ""}${taxiComment ? `, Комментарий: ${taxiComment}` : ""}`
-    
+  const handleTaxiSubmit = () => {
     addOrder({
       type: "taxi",
-      details: orderDetails,
+      details: `Такси: ${taxiAddress}, ${taxiDate} в ${taxiTime}${taxiComment ? `, Комментарий: ${taxiComment}` : ""}`,
       date: taxiDate,
       time: taxiTime,
       status: "pending",
     })
-
-    // Send to Telegram
-    if (guest) {
-      await sendToTelegram({
-        type: "taxi",
-        roomNumber: guest.roomNumber,
-        guestName: guest.name,
-        details: orderDetails,
-        date: taxiDate,
-        time: taxiTime,
-      })
-    }
-
     setShowSuccess(true)
     setTimeout(() => {
       setShowSuccess(false)
       setActiveService(null)
       setTaxiDate("")
-      setTaxiTime("10:00")
+      setTaxiTime("")
       setTaxiAddress("")
       setTaxiComment("")
-      setTaxiSuggestions([])
-      setNeedsChildSeat(false)
     }, 2000)
   }
 
-  const handleRestaurantSubmit = async () => {
-    if (!restaurantName || !restaurantGuests || !restaurantDate || !restaurantTime) return
-
-    const orderDetails = `Ресторан ${restaurantName}, ${restaurantGuests} гостей, ${restaurantDate} в ${restaurantTime}`
-    
+  const handleRestaurantSubmit = () => {
     addOrder({
       type: "restaurant",
-      details: orderDetails,
+      details: `Ресторан ${restaurantName}, ${restaurantGuests} гостей, ${restaurantDate} в ${restaurantTime}`,
       date: restaurantDate,
       time: restaurantTime,
       status: "pending",
     })
-
-    // Send to Telegram
-    if (guest) {
-      await sendToTelegram({
-        type: "restaurant",
-        roomNumber: guest.roomNumber,
-        guestName: guest.name,
-        details: orderDetails,
-        date: restaurantDate,
-        time: restaurantTime,
-      })
-    }
-
     setShowSuccess(true)
     setTimeout(() => {
       setShowSuccess(false)
@@ -150,8 +77,7 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
       setRestaurantName("")
       setRestaurantGuests("")
       setRestaurantDate("")
-      setRestaurantTime("19:00")
-      setRestaurantSuggestions([])
+      setRestaurantTime("")
     }, 2000)
   }
 
@@ -181,55 +107,40 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
         </div>
         <div className="flex-1 px-4 py-6 space-y-4 overflow-y-auto">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground" style={{ marginBottom: "12px", display: "block" }}>Дата</label>
+            <label className="text-sm font-medium text-foreground">Дата</label>
             <Input
               type="date"
               value={taxiDate}
               onChange={(e) => setTaxiDate(e.target.value)}
               className="bg-card border-border text-foreground h-12"
-              style={{ width: "100%", maxWidth: "320px" }}
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground" style={{ marginBottom: "12px", display: "block" }}>Время</label>
+            <label className="text-sm font-medium text-foreground">Время</label>
             <Input
               type="time"
               value={taxiTime}
               onChange={(e) => setTaxiTime(e.target.value)}
               className="bg-card border-border text-foreground h-12"
-              style={{ width: "100%", maxWidth: "320px" }}
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground" style={{ marginBottom: "12px", display: "block" }}>Место назначения</label>
+            <label className="text-sm font-medium text-foreground">Место назначения</label>
             <Input
               placeholder="Например: Эрмитаж"
               value={taxiAddress}
               onChange={(e) => setTaxiAddress(e.target.value)}
               className="bg-card border-border text-foreground placeholder:text-muted-foreground h-12"
-              style={{ width: "100%", maxWidth: "320px" }}
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground" style={{ marginBottom: "12px", display: "block" }}>Комментарий (необязательно)</label>
+            <label className="text-sm font-medium text-foreground">Комментарий (необязательно)</label>
             <textarea
-              placeholder="Класс авто, детское кресло, особые пожелания"
+              placeholder="Дополнительная информация"
               value={taxiComment}
               onChange={(e) => setTaxiComment(e.target.value)}
-              className="w-full bg-card border border-border rounded-xl p-3 text-foreground placeholder:text-muted-foreground text-sm resize-none"
-              style={{ minHeight: "100px", width: "100%", maxWidth: "320px" }}
+              className="w-full bg-card border border-border rounded-xl p-3 text-foreground placeholder:text-muted-foreground text-sm h-20 resize-none"
             />
-          </div>
-          <div className="flex items-center gap-3 pt-2">
-            <Checkbox
-              id="child-seat"
-              checked={needsChildSeat}
-              onCheckedChange={(checked) => setNeedsChildSeat(checked as boolean)}
-              className="border-muted-foreground data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-            />
-            <label htmlFor="child-seat" className="text-sm text-foreground leading-tight">
-              Нужно детское кресло
-            </label>
           </div>
         </div>
         <div className="p-4">
@@ -247,217 +158,57 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
 
   if (activeService === "restaurant") {
     return (
-      <div className="min-h-screen bg-background flex flex-col app-screen">
-        <div className="flex items-center justify-between p-4">
+      <div className="min-h-screen bg-background flex flex-col">
+        <div className="flex items-center justify-between p-4" style={{ paddingTop: "max(1.5rem, env(safe-area-inset-top))" }}>
           <button onClick={() => setActiveService(null)} className="p-2 -ml-2">
             <ArrowLeft className="w-6 h-6 text-foreground" />
           </button>
           <h1 className="text-lg font-semibold text-foreground">Бронь столика</h1>
           <div className="w-10" />
         </div>
-        <div className="flex-1 px-4 py-6 space-y-6 overflow-y-auto">
-          {/* Modern Header */}
-          <div className="flex items-center gap-4 mb-2">
-            <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
-              <UtensilsCrossed className="w-7 h-7 text-primary" />
-            </div>
-            <div>
-              <h2 className="text-xl font-semibold text-foreground">Бронирование ресторана</h2>
-              <p className="text-sm text-muted-foreground">Мы поможем забронировать столик</p>
-            </div>
-          </div>
-
-          {/* Restaurant Name */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground" style={{ marginBottom: "12px", display: "block" }}>Название заведения</label>
-            <Input
-              placeholder="Название ресторана"
-              value={restaurantName}
-              onChange={(e) => setRestaurantName(e.target.value)}
-              className="bg-card border-border text-foreground placeholder:text-muted-foreground h-12"
-              style={{ width: "100%", maxWidth: "320px" }}
-            />
-          </div>
-
-          {/* Guests, Date and Time */}
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground" style={{ marginBottom: "12px", display: "block" }}>Количество гостей</label>
-              <Input
-                placeholder="2"
-                value={restaurantGuests}
-                onChange={(e) => setRestaurantGuests(e.target.value.replace(/\D/g, ""))}
-                inputMode="numeric"
-                className="bg-card border-border text-foreground placeholder:text-muted-foreground h-12"
-                style={{ width: "100%", maxWidth: "320px" }}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground" style={{ marginBottom: "12px", display: "block" }}>Дата</label>
-                <Input
-                  type="date"
-                  value={restaurantDate}
-                  onChange={(e) => setRestaurantDate(e.target.value)}
-                  className="bg-card border-border text-foreground h-12"
-                  style={{ width: "100%" }}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground" style={{ marginBottom: "12px", display: "block" }}>Время</label>
-                <div className="relative">
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                    <Clock className="w-4 h-4 text-muted-foreground" />
-                  </div>
-                  <Input
-                    type="time"
-                    value={restaurantTime}
-                    onChange={(e) => setRestaurantTime(e.target.value)}
-                    className="bg-card border-border text-foreground h-12 pl-10"
-                    style={{ width: "100%" }}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+        <div className="flex-1 px-4 py-6 space-y-4 overflow-y-auto">
+          <Input
+            placeholder="Название ресторана"
+            value={restaurantName}
+            onChange={(e) => setRestaurantName(e.target.value)}
+            className="bg-card border-border text-foreground placeholder:text-muted-foreground h-12"
+          />
+          <Input
+            placeholder="Количество гостей"
+            value={restaurantGuests}
+            onChange={(e) => setRestaurantGuests(e.target.value.replace(/\D/g, ""))}
+            inputMode="numeric"
+            className="bg-card border-border text-foreground placeholder:text-muted-foreground h-12"
+          />
+          <Input
+            type="date"
+            value={restaurantDate}
+            onChange={(e) => setRestaurantDate(e.target.value)}
+            className="bg-card border-border text-foreground h-12"
+          />
+          <Input
+            type="time"
+            value={restaurantTime}
+            onChange={(e) => setRestaurantTime(e.target.value)}
+            className="bg-card border-border text-foreground h-12"
+          />
         </div>
-        <div className="p-4 border-t border-border">
+        <div className="p-4">
           <Button
             onClick={handleRestaurantSubmit}
             disabled={!restaurantName || !restaurantGuests || !restaurantDate || !restaurantTime}
-            className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 text-base font-semibold"
+            className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
-            Забронировать столик
+            Забронировать
           </Button>
         </div>
       </div>
     )
   }
 
-  if (activeService === "excursion") {
-    return (
-      <div className="min-h-screen bg-background app-screen">
-        <div className="flex items-center justify-between p-4">
-          <button onClick={() => setActiveService(null)} className="p-2 -ml-2">
-            <ArrowLeft className="w-6 h-6 text-foreground" />
-          </button>
-          <h1 className="text-lg font-semibold text-foreground">Экскурсии</h1>
-          <div className="w-10" />
-        </div>
-        <div className="px-4 py-6 space-y-4 overflow-y-auto">
-          {tours.map((tour) => (
-            <div
-              key={tour.id}
-              className={`bg-card rounded-2xl overflow-hidden border ${
-                tour.unavailable ? "opacity-70 grayscale" : ""
-              } border-border`}
-            >
-              <div className="relative">
-                <div className="w-full h-48 bg-muted flex items-center justify-center">
-                  <Map className="w-16 h-16 text-muted-foreground" />
-                </div>
-                {tour.unavailable && (
-                  <div className="absolute top-3 right-3 bg-primary/90 text-primary-foreground px-3 py-1 rounded-full text-xs font-semibold">
-                    Скоро
-                  </div>
-                )}
-              </div>
-              <div className="p-4 space-y-3">
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground">{tour.title}</h3>
-                  <p className="text-sm text-muted-foreground mt-1">{tour.description}</p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {tour.highlights.slice(0, 3).map((highlight, idx) => (
-                    <span key={idx} className="text-xs bg-muted text-foreground px-2 py-1 rounded-full">
-                      ✓ {highlight}
-                    </span>
-                  ))}
-                </div>
-                <div className="flex items-center justify-between pt-2 border-t border-border">
-                  <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">🕐 {tour.duration}</p>
-                    <p className="text-sm font-semibold text-primary">{tour.price}</p>
-                  </div>
-                  <Button
-                    disabled={tour.unavailable}
-                    className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-                  >
-                    {tour.unavailable ? "Скоро доступно" : "Забронировать"}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    )
-  }
-
-  if (activeService === "decoration") {
-    return (
-      <div className="min-h-screen bg-background app-screen">
-        <div className="flex items-center justify-between p-4">
-          <button onClick={() => setActiveService(null)} className="p-2 -ml-2">
-            <ArrowLeft className="w-6 h-6 text-foreground" />
-          </button>
-          <h1 className="text-lg font-semibold text-foreground">Украшение номера</h1>
-          <div className="w-10" />
-        </div>
-        <div className="px-4 py-6 space-y-4 overflow-y-auto">
-          {decorations.map((decoration) => (
-            <div
-              key={decoration.id}
-              className={`bg-card rounded-2xl overflow-hidden border ${
-                decoration.unavailable ? "opacity-70 grayscale" : ""
-              } border-border`}
-            >
-              <div className="relative">
-                <div className="w-full h-48 bg-muted flex items-center justify-center">
-                  <Heart className="w-16 h-16 text-muted-foreground" />
-                </div>
-                {decoration.unavailable && (
-                  <div className="absolute top-3 right-3 bg-primary/90 text-primary-foreground px-3 py-1 rounded-full text-xs font-semibold">
-                    Скоро
-                  </div>
-                )}
-              </div>
-              <div className="p-4 space-y-3">
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground">{decoration.title}</h3>
-                  <p className="text-sm text-muted-foreground mt-1">{decoration.description}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-foreground">Включает:</p>
-                  <ul className="text-xs text-muted-foreground space-y-1">
-                    {decoration.includes.map((item, idx) => (
-                      <li key={idx} className="flex items-center gap-2">
-                        <span className="text-primary">•</span>
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="flex items-center justify-between pt-2 border-t border-border">
-                  <p className="text-lg font-semibold text-primary">{decoration.price}</p>
-                  <Button
-                    disabled={decoration.unavailable}
-                    className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-                  >
-                    {decoration.unavailable ? "Скоро доступно" : "Заказать"}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="min-h-screen bg-background app-screen">
-      <div className="flex items-center justify-between p-4">
+    <div className="min-h-screen bg-background">
+      <div className="flex items-center justify-between p-4" style={{ paddingTop: `calc(1.5rem + 5rem)` }}>
         <button onClick={onBack} className="p-2 -ml-2">
           <ArrowLeft className="w-6 h-6 text-foreground" />
         </button>

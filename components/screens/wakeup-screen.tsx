@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useAppStore } from "@/lib/store"
 import { motion } from "framer-motion"
-import { sendToTelegram } from "@/lib/telegram-service"
 
 interface WakeupScreenProps {
   onBack: () => void
@@ -19,7 +18,7 @@ export function WakeupScreen({ onBack }: WakeupScreenProps) {
   const [orderSuccess, setOrderSuccess] = useState(false)
   const { addAlarm, removeAlarm, addOrder, guest, alarms } = useAppStore()
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!selectedDate) return
 
     addAlarm({
@@ -28,27 +27,13 @@ export function WakeupScreen({ onBack }: WakeupScreenProps) {
       comment,
     })
 
-    const orderDetails = `Будильник на ${selectedDate} в ${selectedTime}${comment ? `. Комментарий: ${comment}` : ""}`
-
     addOrder({
       type: "wakeup",
-      details: orderDetails,
+      details: `Будильник на ${selectedDate} в ${selectedTime}${comment ? `. Комментарий: ${comment}` : ""}`,
       time: selectedTime,
       date: selectedDate,
       status: "confirmed",
     })
-
-    // Send to Telegram
-    if (guest) {
-      await sendToTelegram({
-        type: "wakeup",
-        roomNumber: guest.roomNumber,
-        guestName: guest.name,
-        details: orderDetails,
-        date: selectedDate,
-        time: selectedTime,
-      })
-    }
 
     setSelectedDate("")
     setSelectedTime("08:00")
@@ -80,8 +65,8 @@ export function WakeupScreen({ onBack }: WakeupScreenProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col app-screen">
-      <div className="flex items-center justify-between p-4">
+    <div className="min-h-screen bg-background flex flex-col">
+      <div className="flex items-center justify-between p-4" style={{ paddingTop: "max(1.5rem, env(safe-area-inset-top))" }}>
         <button onClick={onBack} className="p-2 -ml-2">
           <ArrowLeft className="w-6 h-6 text-foreground" />
         </button>

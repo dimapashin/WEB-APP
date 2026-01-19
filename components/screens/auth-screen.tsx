@@ -83,18 +83,18 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 relative auth-screen" style={{ scrollBehavior: "smooth" }}>
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 relative" style={{ paddingTop: "max(1.5rem, env(safe-area-inset-top))", scrollBehavior: "smooth" }}>
       <Button
         onClick={() => setLanguage(language === "ru" ? "en" : "ru")}
         variant="outline"
         size="icon"
-        className="absolute left-6 h-9 w-16 border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary font-semibold transition-all duration-200 shadow-sm z-10"
+        className="absolute right-6 h-9 w-16 border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary font-semibold transition-all duration-200 shadow-sm z-10"
         style={{ top: "max(1.5rem, env(safe-area-inset-top))" }}
       >
         <Languages className="w-4 h-4 mr-1" />
         <span className="text-xs">{language === "ru" ? "EN" : "RU"}</span>
       </Button>
-      <div className="w-full max-w-sm space-y-8" style={{ marginTop: "-80px" }}>
+      <div className="w-full max-w-sm space-y-8">
         <div className="text-center">
           <img src="/images/vidi-logo-beige.png" alt="VIDI" className="h-10 mx-auto mb-4" />
           <p className="text-muted-foreground">{t("welcome")}</p>
