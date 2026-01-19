@@ -35,8 +35,8 @@ export function MainScreen({
   const { language, setLanguage } = useLanguage()
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="px-4 py-4 flex items-center justify-center relative" style={{ paddingTop: "max(1.5rem, env(safe-area-inset-top))" }}>
+    <div className="min-h-screen bg-background app-screen">
+      <div className="px-4 py-4 flex items-center justify-center relative">
         <Button
           onClick={() => setLanguage(language === "ru" ? "en" : "ru")}
           variant="outline"

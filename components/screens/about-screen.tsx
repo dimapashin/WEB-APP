@@ -1,6 +1,6 @@
 "use client"
 
-import { ChevronLeft, MapPin, Phone, Mail, MessageCircle, Send, MessageSquare } from "lucide-react"
+import { ChevronLeft, MapPin, Phone, Mail } from "lucide-react"
 import { VidiLogo } from "@/components/ui/vidi-logo"
 import { Button } from "@/components/ui/button"
 import { useT } from "@/lib/i18n"
@@ -14,25 +14,25 @@ export function AboutScreen({ onBack }: AboutScreenProps) {
 
   const socialLinks = [
     {
-      icon: MessageCircle,
+      icon: "/icons/telegram-icon.svg",
       url: "https://t.me/Vidi_Hotel",
       label: "Telegram",
     },
     {
-      icon: Send,
+      icon: "/icons/vk-icon.svg",
       url: "https://vk.com/vidihotel",
       label: "VK",
     },
     {
-      icon: MessageSquare,
-      url: "https://max.me/79213710184",
+      icon: "/icons/max-icon.svg",
+      url: "https://max.ru/u/f9LHodD0cOJ4faT1vazTiGU79fO2d-jquRp4IYdrH8rANDb8AqlLKaVCsOI",
       label: "Max",
     },
   ]
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="px-4 py-4 flex items-center gap-3" style={{ paddingTop: "max(1.5rem, env(safe-area-inset-top))" }}>
+    <div className="min-h-screen bg-background app-screen">
+      <div className="px-4 py-4 flex items-center gap-3">
         <Button
           onClick={onBack}
           variant="ghost"
@@ -108,10 +108,10 @@ export function AboutScreen({ onBack }: AboutScreenProps) {
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary hover:bg-primary/20 transition-colors"
+                className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors"
                 title={link.label}
               >
-                <link.icon className="w-6 h-6" />
+                <img src={link.icon} alt={link.label} className="w-6 h-6" />
               </a>
             ))}
           </div>
