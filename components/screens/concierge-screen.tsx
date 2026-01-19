@@ -4,6 +4,7 @@ import { useState } from "react"
 import { ArrowLeft, Car, UtensilsCrossed, Map, Heart, Check, AlertCircle, MapPin, Clock, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
 import { useAppStore } from "@/lib/store"
 import { motion, AnimatePresence } from "framer-motion"
 import { sendToTelegram } from "@/lib/telegram-service"
@@ -42,6 +43,7 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
   const [taxiAddress, setTaxiAddress] = useState("")
   const [taxiSuggestions, setTaxiSuggestions] = useState<string[]>([])
   const [taxiComment, setTaxiComment] = useState("")
+  const [needsChildSeat, setNeedsChildSeat] = useState(false)
   const [restaurantName, setRestaurantName] = useState("")
   const [restaurantSuggestions, setRestaurantSuggestions] = useState<string[]>([])
   const [restaurantGuests, setRestaurantGuests] = useState("")
@@ -81,7 +83,7 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
   const handleTaxiSubmit = async () => {
     if (!taxiDate || !taxiTime || !taxiAddress) return
 
-    const orderDetails = `Адрес: ${taxiAddress}, Время: ${taxiTime}${taxiComment ? `, Комментарий: ${taxiComment}` : ""}`
+    const orderDetails = `Адрес: ${taxiAddress}, Время: ${taxiTime}${needsChildSeat ? ", Детское кресло: да" : ""}${taxiComment ? `, Комментарий: ${taxiComment}` : ""}`
     
     addOrder({
       type: "taxi",
@@ -112,6 +114,7 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
       setTaxiAddress("")
       setTaxiComment("")
       setTaxiSuggestions([])
+      setNeedsChildSeat(false)
     }, 2000)
   }
 
@@ -178,40 +181,55 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
         </div>
         <div className="flex-1 px-4 py-6 space-y-4 overflow-y-auto">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Дата</label>
+            <label className="text-sm font-medium text-foreground" style={{ marginBottom: "12px", display: "block" }}>Дата</label>
             <Input
               type="date"
               value={taxiDate}
               onChange={(e) => setTaxiDate(e.target.value)}
               className="bg-card border-border text-foreground h-12"
+              style={{ width: "100%", maxWidth: "320px" }}
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Время</label>
+            <label className="text-sm font-medium text-foreground" style={{ marginBottom: "12px", display: "block" }}>Время</label>
             <Input
               type="time"
               value={taxiTime}
               onChange={(e) => setTaxiTime(e.target.value)}
               className="bg-card border-border text-foreground h-12"
+              style={{ width: "100%", maxWidth: "320px" }}
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Место назначения</label>
+            <label className="text-sm font-medium text-foreground" style={{ marginBottom: "12px", display: "block" }}>Место назначения</label>
             <Input
               placeholder="Например: Эрмитаж"
               value={taxiAddress}
               onChange={(e) => setTaxiAddress(e.target.value)}
               className="bg-card border-border text-foreground placeholder:text-muted-foreground h-12"
+              style={{ width: "100%", maxWidth: "320px" }}
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Комментарий (необязательно)</label>
+            <label className="text-sm font-medium text-foreground" style={{ marginBottom: "12px", display: "block" }}>Комментарий (необязательно)</label>
             <textarea
-              placeholder="Дополнительная информация"
+              placeholder="Класс авто, детское кресло, особые пожелания"
               value={taxiComment}
               onChange={(e) => setTaxiComment(e.target.value)}
-              className="w-full bg-card border border-border rounded-xl p-3 text-foreground placeholder:text-muted-foreground text-sm h-20 resize-none"
+              className="w-full bg-card border border-border rounded-xl p-3 text-foreground placeholder:text-muted-foreground text-sm resize-none"
+              style={{ minHeight: "100px", width: "100%", maxWidth: "320px" }}
             />
+          </div>
+          <div className="flex items-center gap-3 pt-2">
+            <Checkbox
+              id="child-seat"
+              checked={needsChildSeat}
+              onCheckedChange={(checked) => setNeedsChildSeat(checked as boolean)}
+              className="border-muted-foreground data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+            />
+            <label htmlFor="child-seat" className="text-sm text-foreground leading-tight">
+              Нужно детское кресло
+            </label>
           </div>
         </div>
         <div className="p-4">
@@ -249,106 +267,44 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
             </div>
           </div>
 
-          {/* Restaurant Name with Suggestions */}
+          {/* Restaurant Name */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Название ресторана</label>
-            <div className="relative">
-              <Input
-                placeholder="Введите название или выберите из популярных..."
-                value={restaurantName}
-                onChange={(e) => {
-                  setRestaurantName(e.target.value)
-                  const filtered = POPULAR_RESTAURANTS.filter((r) =>
-                    r.name.toLowerCase().includes(e.target.value.toLowerCase())
-                  ).map((r) => r.name)
-                  setRestaurantSuggestions(filtered.slice(0, 5))
-                }}
-                onFocus={() => {
-                  if (restaurantName) {
-                    const filtered = POPULAR_RESTAURANTS.filter((r) =>
-                      r.name.toLowerCase().includes(restaurantName.toLowerCase())
-                    ).map((r) => r.name)
-                    setRestaurantSuggestions(filtered.slice(0, 5))
-                  }
-                }}
-                className="bg-card border-border text-foreground placeholder:text-muted-foreground h-12"
-              />
-              {restaurantSuggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl overflow-hidden z-50 shadow-lg">
-                  {restaurantSuggestions.map((suggestion, idx) => {
-                    const restaurant = POPULAR_RESTAURANTS.find((r) => r.name === suggestion)
-                    return (
-                      <button
-                        key={idx}
-                        onClick={() => {
-                          setRestaurantName(suggestion)
-                          setRestaurantSuggestions([])
-                        }}
-                        className="w-full px-4 py-3 text-left hover:bg-muted transition-colors"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <span className="text-lg">{restaurant?.icon}</span>
-                            <div>
-                              <p className="text-foreground font-medium">{suggestion}</p>
-                              <p className="text-xs text-muted-foreground">{restaurant?.cuisine}</p>
-                            </div>
-                          </div>
-                          <span className="text-xs text-primary">⭐ {restaurant?.rating}</span>
-                        </div>
-                      </button>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Popular Restaurants */}
-          <div className="space-y-3">
-            <p className="text-sm font-medium text-foreground">Популярные рестораны:</p>
-            <div className="grid grid-cols-2 gap-3">
-              {POPULAR_RESTAURANTS.slice(0, 4).map((restaurant, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setRestaurantName(restaurant.name)}
-                  className="bg-card border border-border rounded-xl p-3 text-left hover:border-primary/50 hover:bg-primary/5 transition-all"
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-lg">{restaurant.icon}</span>
-                    <span className="text-xs text-primary">⭐ {restaurant.rating}</span>
-                  </div>
-                  <p className="text-sm font-medium text-foreground">{restaurant.name}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{restaurant.cuisine}</p>
-                </button>
-              ))}
-            </div>
+            <label className="text-sm font-medium text-foreground" style={{ marginBottom: "12px", display: "block" }}>Название заведения</label>
+            <Input
+              placeholder="Название ресторана"
+              value={restaurantName}
+              onChange={(e) => setRestaurantName(e.target.value)}
+              className="bg-card border-border text-foreground placeholder:text-muted-foreground h-12"
+              style={{ width: "100%", maxWidth: "320px" }}
+            />
           </div>
 
           {/* Guests, Date and Time */}
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Количество гостей</label>
+              <label className="text-sm font-medium text-foreground" style={{ marginBottom: "12px", display: "block" }}>Количество гостей</label>
               <Input
                 placeholder="2"
                 value={restaurantGuests}
                 onChange={(e) => setRestaurantGuests(e.target.value.replace(/\D/g, ""))}
                 inputMode="numeric"
                 className="bg-card border-border text-foreground placeholder:text-muted-foreground h-12"
+                style={{ width: "100%", maxWidth: "320px" }}
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Дата</label>
+                <label className="text-sm font-medium text-foreground" style={{ marginBottom: "12px", display: "block" }}>Дата</label>
                 <Input
                   type="date"
                   value={restaurantDate}
                   onChange={(e) => setRestaurantDate(e.target.value)}
                   className="bg-card border-border text-foreground h-12"
+                  style={{ width: "100%" }}
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Время</label>
+                <label className="text-sm font-medium text-foreground" style={{ marginBottom: "12px", display: "block" }}>Время</label>
                 <div className="relative">
                   <div className="absolute left-3 top-1/2 -translate-y-1/2">
                     <Clock className="w-4 h-4 text-muted-foreground" />
@@ -358,6 +314,7 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
                     value={restaurantTime}
                     onChange={(e) => setRestaurantTime(e.target.value)}
                     className="bg-card border-border text-foreground h-12 pl-10"
+                    style={{ width: "100%" }}
                   />
                 </div>
               </div>

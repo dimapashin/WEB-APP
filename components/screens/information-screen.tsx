@@ -26,11 +26,12 @@ export function InformationScreen({ onBack }: InformationScreenProps) {
 
   return (
     <div className="min-h-screen bg-background app-screen">
-      <div className="px-4 py-4 flex items-center gap-3">
+      <div className="flex items-center justify-between p-4">
         <Button onClick={onBack} variant="ghost" className="p-2 h-auto text-foreground hover:text-primary">
           <ChevronLeft className="w-6 h-6" />
         </Button>
         <h1 className="text-2xl font-semibold text-foreground">{t("information.title")}</h1>
+        <div className="w-10" />
       </div>
 
       <div className="px-4 pb-6">

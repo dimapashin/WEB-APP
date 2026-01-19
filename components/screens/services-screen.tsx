@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { useAppStore } from "@/lib/store"
 import { motion, AnimatePresence } from "framer-motion"
 import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
 import { sendToTelegram } from "@/lib/telegram-service"
 
 interface ServicesScreenProps {
@@ -17,9 +18,16 @@ type ServiceType = "laundry" | "iron" | "supplies" | "cleaning" | null
 export function ServicesScreen({ onBack }: ServicesScreenProps) {
   const [activeService, setActiveService] = useState<ServiceType>(null)
   const [selectedTime, setSelectedTime] = useState("10:00")
+  const [selectedDate, setSelectedDate] = useState("")
+  const [needsIron, setNeedsIron] = useState(false)
+  const [needsIroningBoard, setNeedsIroningBoard] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [showUnavailable, setShowUnavailable] = useState(false)
+  const [showLimitError, setShowLimitError] = useState(false)
   const { addOrder, guest } = useAppStore()
+
+  // Simulate active iron requests (in real app, this would come from backend)
+  const [activeIronRequests, setActiveIronRequests] = useState(3) // Example: 3 irons currently in use
 
   const services = [
     { id: "laundry", icon: Shirt, title: "Прачечная", subtitle: "Стирка и химчистка", working: false },
@@ -48,10 +56,24 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
   }
 
   const handleIronSubmit = async () => {
-    const today = new Date()
-    const dateStr = today.toISOString().split("T")[0]
+    if (!selectedTime || !selectedDate || (!needsIron && !needsIroningBoard)) return
 
-    const orderDetails = `Утюг и гладильная доска на ${selectedTime} (доступно с 9:00 до 18:00)`
+    // Check if we've reached the limit of 10 items
+    const totalItems = (needsIron ? 1 : 0) + (needsIroningBoard ? 1 : 0)
+    if (activeIronRequests + totalItems > 10) {
+      setShowLimitError(true)
+      setTimeout(() => setShowLimitError(false), 3000)
+      return
+    }
+
+    const today = new Date()
+    const dateStr = selectedDate || today.toISOString().split("T")[0]
+
+    const selectedItems = []
+    if (needsIron) selectedItems.push("Утюг")
+    if (needsIroningBoard) selectedItems.push("Гладильная доска")
+
+    const orderDetails = `${selectedItems.join(" и ")} на ${selectedTime} (доступно с 9:00 до 18:00)`
 
     addOrder({
       type: "iron",
@@ -73,10 +95,17 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
       })
     }
 
+    // Update active requests count (in real app, this would be handled by backend)
+    setActiveIronRequests(activeIronRequests + totalItems)
+
     setShowSuccess(true)
     setTimeout(() => {
       setShowSuccess(false)
       setActiveService(null)
+      setSelectedTime("10:00")
+      setSelectedDate("")
+      setNeedsIron(false)
+      setNeedsIroningBoard(false)
     }, 2000)
   }
 
@@ -94,6 +123,20 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
     )
   }
 
+  if (showLimitError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-center">
+          <div className="w-24 h-24 rounded-full bg-[#FF9800] flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-12 h-12 text-white" />
+          </div>
+          <h2 className="text-xl font-semibold text-foreground">Все утюги заняты</h2>
+          <p className="text-muted-foreground mt-2">Дождитесь возврата. Максимальное количество: 10 штук</p>
+        </motion.div>
+      </div>
+    )
+  }
+
   if (activeService === "iron") {
     return (
       <div className="min-h-screen bg-background flex flex-col app-screen">
@@ -106,7 +149,17 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
         </div>
         <div className="flex-1 px-4 py-6 space-y-4 overflow-y-auto">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Время доставки</label>
+            <label className="text-sm font-medium text-foreground" style={{ marginBottom: "12px", display: "block" }}>Дата</label>
+            <Input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="bg-card border-border text-foreground h-12"
+              style={{ width: "100%", maxWidth: "320px" }}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground" style={{ marginBottom: "12px", display: "block" }}>Время доставки</label>
             <p className="text-sm text-primary mb-4">Доступно: 09:00 – 18:00</p>
             <Input
               type="time"
@@ -115,13 +168,45 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
               min="09:00"
               max="18:00"
               className="bg-card border-border text-foreground h-12"
+              style={{ width: "100%", maxWidth: "320px" }}
             />
+          </div>
+          <div className="space-y-4">
+            <label className="text-sm font-medium text-foreground">Что нужно:</label>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <Checkbox
+                  id="iron"
+                  checked={needsIron}
+                  onCheckedChange={(checked) => setNeedsIron(checked as boolean)}
+                  className="border-muted-foreground data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                />
+                <label htmlFor="iron" className="text-sm text-foreground leading-tight">
+                  Утюг
+                </label>
+              </div>
+              <div className="flex items-center gap-3">
+                <Checkbox
+                  id="ironing-board"
+                  checked={needsIroningBoard}
+                  onCheckedChange={(checked) => setNeedsIroningBoard(checked as boolean)}
+                  className="border-muted-foreground data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                />
+                <label htmlFor="ironing-board" className="text-sm text-foreground leading-tight">
+                  Гладильная доска
+                </label>
+              </div>
+            </div>
+          </div>
+          <div className="text-xs text-muted-foreground">
+            Доступно: {10 - activeIronRequests} из 10 утюгов
           </div>
         </div>
         <div className="p-4">
           <Button
             onClick={handleIronSubmit}
-            className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90"
+            disabled={!selectedTime || !selectedDate || (!needsIron && !needsIroningBoard)}
+            className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
             Заказать на {selectedTime}
           </Button>
@@ -166,8 +251,8 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="flex items-center justify-between p-4" style={{ paddingTop: `calc(1.5rem + 5rem)` }}>
+    <div className="min-h-screen bg-background app-screen">
+      <div className="flex items-center justify-between p-4">
         <button onClick={onBack} className="p-2 -ml-2">
           <ArrowLeft className="w-6 h-6 text-foreground" />
         </button>

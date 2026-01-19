@@ -80,50 +80,18 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0)
   const cartItem = selectedItem ? cart.find((item) => item.id === selectedItem.id) : undefined
 
-  // Initialize infinite scroll on mount
+  // Handle scroll to update selected index (simple scroll, no infinite loop)
   useEffect(() => {
     const container = scrollContainerRef.current
     if (!container) return
-
-    const itemCount = breakfastComplexes.length
-    const cardWidth = container.clientWidth
-
-    // Initialize infinite scroll: start at middle position (after first set of items)
-    // Use setTimeout to ensure container is fully rendered
-    setTimeout(() => {
-      if (container.scrollLeft === 0 || container.scrollLeft < cardWidth * itemCount) {
-        container.scrollLeft = cardWidth * itemCount
-      }
-    }, 100)
-  }, [])
-
-  // Handle scroll to update selected index with infinite loop
-  useEffect(() => {
-    const container = scrollContainerRef.current
-    if (!container) return
-
-    const itemCount = breakfastComplexes.length
-    const cardWidth = container.clientWidth
 
     const handleScroll = () => {
       setIsScrolling(true)
       const scrollLeft = container.scrollLeft
-      const totalWidth = container.scrollWidth
+      const cardWidth = container.clientWidth
+      const newIndex = Math.round(scrollLeft / cardWidth)
 
-      // Calculate current index based on scroll position
-      let newIndex = Math.round(scrollLeft / cardWidth) % itemCount
-      if (newIndex < 0) newIndex = itemCount + newIndex
-
-      // Infinite scroll: reset position when reaching boundaries
-      if (scrollLeft >= totalWidth - cardWidth * 1.5) {
-        // Near the end, jump to middle section
-        container.scrollTo({ left: cardWidth * itemCount, behavior: "auto" })
-      } else if (scrollLeft <= cardWidth * 0.5) {
-        // Near the beginning, jump to middle section
-        container.scrollTo({ left: cardWidth * itemCount, behavior: "auto" })
-      }
-
-      if (newIndex !== selectedIndex && newIndex >= 0 && newIndex < itemCount) {
+      if (newIndex !== selectedIndex && newIndex >= 0 && newIndex < breakfastComplexes.length) {
         setSelectedIndex(newIndex)
       }
 
@@ -141,12 +109,8 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
     if (!container) return
 
     const cardWidth = container.clientWidth
-    const itemCount = breakfastComplexes.length
-    // Scroll to middle section + index for infinite scroll
-    const targetScroll = cardWidth * itemCount + index * cardWidth
-    
     container.scrollTo({
-      left: targetScroll,
+      left: index * cardWidth,
       behavior: "smooth",
     })
     setSelectedIndex(index)
@@ -166,6 +130,23 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
   const handleCheckoutSubmit = async () => {
     if (!checkoutDate || !paymentMethod) return
 
+    // Check if date is within guest's stay period
+    if (guest?.checkInDate && guest?.checkoutDate) {
+      const selectedDate = new Date(checkoutDate)
+      const checkIn = new Date(guest.checkInDate)
+      const checkout = new Date(guest.checkoutDate)
+      
+      // Set time to 00:00:00 for comparison
+      selectedDate.setHours(0, 0, 0, 0)
+      checkIn.setHours(0, 0, 0, 0)
+      checkout.setHours(0, 0, 0, 0)
+
+      if (selectedDate < checkIn || selectedDate >= checkout) {
+        alert("❌ Вы не проживаете в отеле в эти даты. Пожалуйста, выберите дату в период вашего проживания.")
+        return
+      }
+    }
+
     const cartItems = cart.map((item) => `${item.name} x${item.quantity}`).join(", ")
 
     // Send to Telegram
@@ -174,7 +155,7 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
         type: "breakfast",
         roomNumber: guest.roomNumber,
         guestName: guest.name,
-        details: `Завтраки: ${cartItems}. Дата доставки: ${checkoutDate}`,
+        details: `Завтраки: ${cartItems}. Дата: ${checkoutDate}`,
         date: checkoutDate,
         amount: cartTotal,
         paymentMethod: paymentMethod,
@@ -189,64 +170,15 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
   }
 
   const handlePrev = () => {
-    const container = scrollContainerRef.current
-    if (!container) return
-
-    const cardWidth = container.clientWidth
-    const currentScroll = container.scrollLeft
-    const newScroll = currentScroll - cardWidth
-
-    // If we're at the beginning, jump to end section
-    if (newScroll < cardWidth * 0.5) {
-      const itemCount = breakfastComplexes.length
-      container.scrollTo({
-        left: cardWidth * itemCount * 2 - cardWidth,
-        behavior: "auto",
-      })
-      // Then scroll smoothly
-      setTimeout(() => {
-        container.scrollTo({
-          left: cardWidth * itemCount * 2 - cardWidth * 2,
-          behavior: "smooth",
-        })
-      }, 50)
-    } else {
-      container.scrollTo({
-        left: newScroll,
-        behavior: "smooth",
-      })
-    }
+    const newIndex = (selectedIndex - 1 + breakfastComplexes.length) % breakfastComplexes.length
+    setSelectedIndex(newIndex)
+    scrollToIndex(newIndex)
   }
 
   const handleNext = () => {
-    const container = scrollContainerRef.current
-    if (!container) return
-
-    const cardWidth = container.clientWidth
-    const currentScroll = container.scrollLeft
-    const totalWidth = container.scrollWidth
-    const newScroll = currentScroll + cardWidth
-
-    // If we're at the end, jump to beginning section
-    if (newScroll >= totalWidth - cardWidth * 0.5) {
-      const itemCount = breakfastComplexes.length
-      container.scrollTo({
-        left: cardWidth * itemCount,
-        behavior: "auto",
-      })
-      // Then scroll smoothly
-      setTimeout(() => {
-        container.scrollTo({
-          left: cardWidth * itemCount + cardWidth,
-          behavior: "smooth",
-        })
-      }, 50)
-    } else {
-      container.scrollTo({
-        left: newScroll,
-        behavior: "smooth",
-      })
-    }
+    const newIndex = (selectedIndex + 1) % breakfastComplexes.length
+    setSelectedIndex(newIndex)
+    scrollToIndex(newIndex)
   }
 
   const handleDotClick = (index: number) => {
@@ -302,9 +234,8 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
             msOverflowStyle: "none",
           }}
         >
-          {/* Duplicate items for infinite scroll */}
-          {[...breakfastComplexes, ...breakfastComplexes, ...breakfastComplexes].map((complex, index) => (
-            <div key={`${complex.id}-${index}`} className="w-full flex-shrink-0 snap-center px-4">
+          {breakfastComplexes.map((complex, index) => (
+            <div key={complex.id} className="w-full flex-shrink-0 snap-center px-4">
               <div className="flex justify-center py-4">
                 <motion.img
                   src={complex.image}
@@ -544,18 +475,20 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
               <div className="space-y-4">
                 <div>
                   <label className="text-sm font-medium text-foreground block mb-2">
-                    {t("breakfast.delivery_date")}
+                    Дата
                   </label>
                   <Input
                     type="date"
                     value={checkoutDate}
                     onChange={(e) => setCheckoutDate(e.target.value)}
-                    className="bg-background border-border text-foreground h-12"
+                    className="bg-background border-border text-foreground h-12 w-full"
+                    min={guest?.checkInDate || undefined}
+                    max={guest?.checkoutDate ? new Date(new Date(guest.checkoutDate).getTime() - 86400000).toISOString().split('T')[0] : undefined}
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-foreground block mb-3">
+                  <label className="text-sm font-medium text-foreground block mb-2">
                     {t("breakfast.payment_method")}
                   </label>
                   <div className="space-y-2">

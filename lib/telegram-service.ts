@@ -1,6 +1,13 @@
 const BOT_TOKEN = "8594370320:AAG-BYVZXyzxn_U3Ie5Jv6w_H7JltfFTYEk"
 const RECEPTION_CHAT_ID = "-1003540162741"
 
+const THREAD_IDS = {
+  RECEPTION: 454,   // 🛎️ Заявки (Утюг, Wi-Fi, Завтраки)
+  TAXI: 452,        // 🚕 Такси  
+  WAKEUP: 450,      // ⏰ Будильники
+  REVIEWS: 447,     // ⭐️ Отзывы
+}
+
 export interface NotificationData {
   type: string
   roomNumber: string
@@ -10,6 +17,25 @@ export interface NotificationData {
   time?: string
   amount?: number
   paymentMethod?: string
+  userId?: string
+}
+
+function getThreadIdForType(type: string): number {
+  switch (type) {
+    case "breakfast":
+    case "iron":
+    case "supplies":
+    case "wifi":
+      return THREAD_IDS.RECEPTION
+    case "taxi":
+      return THREAD_IDS.TAXI
+    case "wakeup":
+      return THREAD_IDS.WAKEUP
+    case "feedback":
+      return THREAD_IDS.REVIEWS
+    default:
+      return THREAD_IDS.RECEPTION
+  }
 }
 
 export async function sendToTelegram(orderData: NotificationData): Promise<boolean> {
@@ -25,27 +51,25 @@ export async function sendToTelegram(orderData: NotificationData): Promise<boole
   }
 
   const typeLabel = typeLabels[orderData.type] || orderData.type
+  const threadId = getThreadIdForType(orderData.type)
 
-  let message = `🛎️ *НОВЫЙ ЗАКАЗ ОТ ГОСТЯ*\n`
-  message += `──────────────\n`
-  message += `• *Услуга:* ${typeLabel}\n`
-  message += `• *Номер комнаты:* ${orderData.roomNumber}\n`
-  message += `• *Имя гостя:* ${orderData.guestName}\n`
-  message += `• *Детали:* ${orderData.details}\n`
-  if (orderData.amount) {
-    message += `• *Сумма:* ${orderData.amount} ₽\n`
-  }
-  if (orderData.date) {
-    message += `• *Дата:* ${orderData.date}\n`
-  }
+  let message = `🛎️ НОВАЯ ЗАЯВКА | ${typeLabel.split(' ')[1]}\n`
+  message += `────────────────\n`
+  message += `• 🏨 Комната: ${orderData.roomNumber}\n`
+  message += `• 👤 Гость: ${orderData.userId ? `[${orderData.guestName}](tg://user?id=${orderData.userId})` : orderData.guestName}\n`
+  message += `• 🗓️ Дата: ${orderData.date || new Date().toLocaleDateString('ru-RU')}\n`
   if (orderData.time) {
-    message += `• *Время:* ${orderData.time}\n`
+    message += `• 🕒 Время: ${orderData.time}\n`
+  }
+  message += `• 📍 Детали: ${orderData.details}\n`
+  if (orderData.amount) {
+    message += `• 💰 Сумма: ${orderData.amount} ₽\n`
   }
   if (orderData.paymentMethod) {
-    message += `• *Оплата:* ${orderData.paymentMethod === "card" ? "Банковская карта" : "СБП"}\n`
+    message += `• 💳 Оплата: ${orderData.paymentMethod === "card" ? "Банковская карта" : "СБП"}\n`
   }
-  message += `• *Время:* ${new Date().toLocaleString("ru-RU")}\n`
-  message += `──────────────`
+  message += `────────────────\n`
+  message += `⏱️ ${new Date().toLocaleString("ru-RU")}`
 
   try {
     const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -53,8 +77,10 @@ export async function sendToTelegram(orderData: NotificationData): Promise<boole
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         chat_id: RECEPTION_CHAT_ID,
+        message_thread_id: threadId,
         text: message,
         parse_mode: "Markdown",
+        disable_web_page_preview: true,
       }),
     })
 

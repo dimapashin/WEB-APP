@@ -32,7 +32,7 @@ export function AboutScreen({ onBack }: AboutScreenProps) {
 
   return (
     <div className="min-h-screen bg-background app-screen">
-      <div className="px-4 py-4 flex items-center gap-3">
+      <div className="flex items-center justify-between p-4">
         <Button
           onClick={onBack}
           variant="ghost"
@@ -41,11 +41,12 @@ export function AboutScreen({ onBack }: AboutScreenProps) {
           <ChevronLeft className="w-6 h-6" />
         </Button>
         <h1 className="text-2xl font-semibold text-foreground">{t("about.title")}</h1>
+        <div className="w-10" />
       </div>
 
       <div className="px-4 pb-8 space-y-6">
         <div className="text-center">
-          <VidiLogo className="w-16 h-auto mx-auto text-primary mb-2" />
+          <VidiLogo className="w-20 h-auto mx-auto text-primary mb-2" />
           <p className="text-muted-foreground text-sm">{t("about.description")}</p>
         </div>
 
@@ -79,6 +80,7 @@ export function AboutScreen({ onBack }: AboutScreenProps) {
                 <a href="tel:+78126795772" className="text-primary text-sm mt-1 block hover:underline">
                   +7 (812) 679-57-72
                 </a>
+                <p className="text-xs text-muted-foreground mt-1">Ресепшен работает круглосуточно</p>
               </div>
             </div>
           </div>
@@ -108,12 +110,25 @@ export function AboutScreen({ onBack }: AboutScreenProps) {
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors"
+                className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors"
                 title={link.label}
               >
-                <img src={link.icon} alt={link.label} className="w-6 h-6" />
+                <img src={link.icon} alt={link.label} className="w-8 h-8" />
               </a>
             ))}
+          </div>
+        </div>
+
+        {/* Breakfast Schedule */}
+        <div className="bg-card rounded-2xl p-4">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <span className="text-xl">🍽️</span>
+            </div>
+            <div>
+              <h3 className="font-medium text-foreground">Время завтраков</h3>
+              <p className="text-sm text-muted-foreground mt-1">С 7:00 до 11:00, каждый день</p>
+            </div>
           </div>
         </div>
       </div>
