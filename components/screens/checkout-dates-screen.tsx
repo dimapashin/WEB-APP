@@ -30,7 +30,6 @@ export function CheckoutDatesScreen({ guestName, roomNumber, onConfirm, onBack }
     if (!isValid) return
 
     setLoading(true)
-    // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000))
     onConfirm(checkInDate, checkoutDate)
   }
@@ -44,33 +43,42 @@ export function CheckoutDatesScreen({ guestName, roomNumber, onConfirm, onBack }
         <h1 className="text-lg font-semibold text-foreground">Уточнение дат</h1>
         <div className="w-10" />
       </div>
-      <div className="px-4 py-6 space-y-6">
 
+      <div className="px-4 py-6 space-y-6">
         <div className="bg-card border border-border rounded-xl p-4 space-y-2">
           <p className="text-sm text-muted-foreground">Гость: {guestName}</p>
           <p className="text-sm text-muted-foreground">Комната: {roomNumber}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+
+          {/* Дата заезда */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Дата заезда</label>
-            <Input
-              type="date"
-              value={checkInDate}
-              onChange={(e) => setCheckInDate(e.target.value)}
-              className="bg-card border-border text-foreground h-12"
-            />
+
+            <div className="relative overflow-hidden rounded-lg border border-border">
+              <Input
+                type="date"
+                value={checkInDate}
+                onChange={(e) => setCheckInDate(e.target.value)}
+                className="bg-card text-foreground h-12 w-full px-4 appearance-none"
+              />
+            </div>
           </div>
 
+          {/* Дата выезда */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Дата выезда</label>
-            <Input
-              type="date"
-              value={checkoutDate}
-              onChange={(e) => setCheckoutDate(e.target.value)}
-              className="bg-card border-border text-foreground h-12"
-              min={checkInDate}
-            />
+
+            <div className="relative overflow-hidden rounded-lg border border-border">
+              <Input
+                type="date"
+                value={checkoutDate}
+                onChange={(e) => setCheckoutDate(e.target.value)}
+                min={checkInDate}
+                className="bg-card text-foreground h-12 w-full px-4 appearance-none"
+              />
+            </div>
           </div>
 
           <Button

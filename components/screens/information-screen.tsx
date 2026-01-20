@@ -2,19 +2,24 @@
 
 import { useState } from "react"
 import { useT } from "@/lib/i18n"
-import { Button } from "@/components/ui/button"
-import { ChevronLeft, Wifi, Star, Gift, Heart, Map, UtensilsCrossed, Car, Shirt, Sparkles, ShoppingBag, Brush } from "lucide-react"
+import { ChevronLeft, Wifi, Star, Gift, Heart } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
+
 import { WifiSection } from "./information/wifi-section"
 import { FeedbackSection } from "./information/feedback-section"
 import { OffersSection } from "./information/offers-section"
 import { AnimalsSection } from "./information/animals-section"
 
+import {
+  screenTransition,
+  fadeInUp,
+  tap,
+} from "@/lib/animations"
+
 interface InformationScreenProps {
   onBack: () => void
 }
 
-// Define sections as cards similar to concierge and services screens
 const INFORMATION_CARDS = [
   { id: "wifi", title: "Wi-Fi", subtitle: "Подключение к интернету", icon: Wifi, component: <WifiSection /> },
   { id: "feedback", title: "Оставить отзыв", subtitle: "Поделитесь впечатлениями", icon: Star, component: <FeedbackSection /> },
@@ -28,55 +33,89 @@ export function InformationScreen({ onBack }: InformationScreenProps) {
 
   const selectedCard = INFORMATION_CARDS.find(card => card.id === activeCard)
 
+  /* ---------------------- SUBSCREEN ---------------------- */
+
   if (activeCard && selectedCard) {
     return (
       <AnimatePresence mode="wait">
         <motion.div
           key={activeCard}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-          className="min-h-screen bg-background flex flex-col app-screen"
+          {...screenTransition}
+          className="min-h-screen bg-background flex flex-col"
         >
-        <div className="flex items-center justify-between p-4" style={{ paddingTop: `calc(1.5rem + 5rem)` }}>
-          <button onClick={() => setActiveCard(null)} className="p-2 -ml-2">
-            <ChevronLeft className="w-6 h-6 text-foreground" />
-          </button>
-          <h1 className="text-lg font-semibold text-foreground">{selectedCard.title}</h1>
-          <div className="w-10" />
-        </div>
-        <div className="flex-1 overflow-y-auto">
-          {selectedCard.component}
-        </div>
+          {/* HEADER */}
+          <div
+            className="flex items-center justify-between px-4 pb-4"
+            style={{ paddingTop: "calc(env(safe-area-inset-top) + 1.25rem)" }}
+          >
+            <motion.button
+              onClick={() => setActiveCard(null)}
+              className="p-2 -ml-2"
+              {...tap}
+            >
+              <ChevronLeft className="w-6 h-6 text-foreground" />
+            </motion.button>
+
+            <h1 className="text-lg font-semibold text-foreground">
+              {selectedCard.title}
+            </h1>
+
+            <div className="w-10" />
+          </div>
+
+          {/* CONTENT */}
+          <motion.div
+            className="flex-1 overflow-y-auto px-4 pb-[env(safe-area-inset-bottom)]"
+            {...fadeInUp(0.1)}
+          >
+            {selectedCard.component}
+          </motion.div>
         </motion.div>
       </AnimatePresence>
     )
   }
 
+  /* ---------------------- MAIN SCREEN ---------------------- */
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="flex items-center justify-between p-4" style={{ paddingTop: `calc(1.5rem + 5rem)` }}>
-        <button onClick={onBack} className="p-2 -ml-2">
+    <motion.div
+      {...screenTransition}
+      className="min-h-screen bg-background flex flex-col"
+    >
+      {/* HEADER */}
+      <div
+        className="flex items-center justify-between px-4 pb-4"
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 1.25rem)" }}
+      >
+        <motion.button
+          onClick={onBack}
+          className="p-2 -ml-2"
+          {...tap}
+        >
           <ChevronLeft className="w-6 h-6 text-foreground" />
-        </button>
-        <h1 className="text-lg font-semibold text-foreground">{t("information.title")}</h1>
+        </motion.button>
+
+        <h1 className="text-lg font-semibold text-foreground">
+          {t("information.title")}
+        </h1>
+
         <div className="w-10" />
       </div>
 
-      <div className="px-4 py-6 space-y-3">
+      {/* CARDS */}
+      <div className="px-4 pb-[env(safe-area-inset-bottom)] space-y-4">
         {INFORMATION_CARDS.map((card, index) => (
           <motion.button
             key={card.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.05 }}
+            {...fadeInUp(index * 0.05)}
             onClick={() => setActiveCard(card.id)}
-            className="w-full bg-card rounded-2xl p-4 flex items-center gap-4 transition-scale active:scale-[0.98] hover:bg-card/80"
+            className="w-full bg-card rounded-2xl p-4 flex items-center gap-4 hover:bg-card/80 transition-colors"
+            {...tap}
           >
             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
               <card.icon className="w-6 h-6 text-primary" />
             </div>
+
             <div className="text-left flex-1">
               <h3 className="font-medium text-foreground">{card.title}</h3>
               <p className="text-sm text-muted-foreground">{card.subtitle}</p>
@@ -84,6 +123,6 @@ export function InformationScreen({ onBack }: InformationScreenProps) {
           </motion.button>
         ))}
       </div>
-    </div>
+    </motion.div>
   )
 }

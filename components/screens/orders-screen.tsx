@@ -2,7 +2,18 @@
 
 import type React from "react"
 
-import { ArrowLeft, UtensilsCrossed, Car, AlarmClock, Shirt, Trash2, X, Calendar, Clock } from "lucide-react"
+import {
+  ArrowLeft,
+  UtensilsCrossed,
+  Car,
+  AlarmClock,
+  Shirt,
+  Trash2,
+  X,
+  Calendar,
+  Clock,
+} from "lucide-react"
+
 import { useState } from "react"
 import {
   AlertDialog,
@@ -13,9 +24,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+
 import { useAppStore } from "@/lib/store"
 import { motion, AnimatePresence } from "framer-motion"
+
+import {
+  screenTransition,
+  fadeInUp,
+  fadeIn,
+  tap,
+  scaleIn,
+} from "@/lib/animations"
 
 interface OrdersScreenProps {
   onBack: () => void
@@ -43,6 +62,7 @@ const statusColors: Record<string, string> = {
 export function OrdersScreen({ onBack }: OrdersScreenProps) {
   const orders = useAppStore((state) => state.orders)
   const deleteOrder = useAppStore((state) => state.deleteOrder)
+
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [selectedOrder, setSelectedOrder] = useState<typeof orders[0] | null>(null)
 
@@ -53,25 +73,39 @@ export function OrdersScreen({ onBack }: OrdersScreenProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background app-screen">
-      <div className="flex items-center justify-between p-4" style={{ paddingTop: `calc(1.5rem + 5rem)` }}>
-        <button onClick={onBack} className="p-2 -ml-2">
+    <motion.div
+      {...screenTransition}
+      className="min-h-screen bg-background app-screen flex flex-col"
+    >
+      {/* HEADER */}
+      <div
+        className="flex items-center justify-between px-4 pb-4"
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 1.25rem)" }}
+      >
+        <motion.button onClick={onBack} className="p-2 -ml-2" {...tap}>
           <ArrowLeft className="w-6 h-6 text-foreground" />
-        </button>
+        </motion.button>
+
         <h1 className="text-lg font-semibold text-foreground">Мои заказы</h1>
+
         <div className="w-10" />
       </div>
 
-      <div className="px-4 py-2">
+      {/* CONTENT */}
+      <div className="px-4 pb-[env(safe-area-inset-bottom)]">
         {orders.length === 0 ? (
-          <div className="text-center py-12">
+          <motion.div
+            {...fadeInUp(0.1)}
+            className="text-center py-12"
+          >
             <p className="text-muted-foreground">У вас пока нет заказов</p>
-          </div>
+          </motion.div>
         ) : (
-          <div className="space-y-3">
-            {[...orders].reverse()
-              .filter(order => order.type !== 'wakeup')
-              .map((order) => {
+          <div className="space-y-4">
+            {[...orders]
+              .reverse()
+              .filter((order) => order.type !== "wakeup")
+              .map((order, index) => {
                 const Icon = orderIcons[order.type] || UtensilsCrossed
                 const date = new Date(order.createdAt)
                 const formattedDate = date.toLocaleDateString("ru-RU", {
@@ -82,27 +116,38 @@ export function OrdersScreen({ onBack }: OrdersScreenProps) {
                 })
 
                 return (
-                  <button
+                  <motion.button
                     key={order.id}
+                    {...fadeInUp(index * 0.05)}
+                    {...tap}
                     onClick={() => setSelectedOrder(order)}
-                    className="w-full bg-card rounded-2xl p-4 text-left transition-scale active:scale-[0.98]"
+                    className="w-full bg-card rounded-2xl p-4 text-left hover:bg-card/80 transition-colors"
                   >
                     <div className="flex items-start gap-4">
                       <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                         <Icon className="w-6 h-6 text-primary" />
                       </div>
+
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
-                          <h3 className="font-medium text-foreground truncate">{order.details}</h3>
+                          <h3 className="font-medium text-foreground truncate">
+                            {order.details}
+                          </h3>
+
                           <span
                             className={`px-2 py-1 rounded-full text-xs whitespace-nowrap ${statusColors[order.status]}`}
                           >
                             {statusLabels[order.status]}
                           </span>
                         </div>
-                        <p className="text-sm text-muted-foreground mt-1">{formattedDate}</p>
+
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {formattedDate}
+                        </p>
                       </div>
-                      <button
+
+                      <motion.button
+                        {...tap}
                         onClick={(e) => {
                           e.stopPropagation()
                           setDeleteConfirm(order.id)
@@ -110,42 +155,42 @@ export function OrdersScreen({ onBack }: OrdersScreenProps) {
                         className="p-2 hover:bg-muted rounded-lg transition-colors"
                       >
                         <Trash2 className="w-4 h-4 text-muted-foreground" />
-                      </button>
+                      </motion.button>
                     </div>
-                  </button>
+                  </motion.button>
                 )
               })}
           </div>
         )}
       </div>
 
-      {/* Order Details Modal */}
+      {/* ORDER DETAILS MODAL */}
       <AnimatePresence>
         {selectedOrder && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            {...fadeIn}
             className="fixed inset-0 bg-black/60 z-50 flex items-end"
             onClick={() => setSelectedOrder(null)}
           >
             <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              {...scaleIn}
               className="w-full bg-card rounded-t-3xl p-6 max-h-[80vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="w-12 h-1 bg-muted rounded-full mx-auto mb-6" />
+
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-foreground">Детали заказа</h2>
-                <button
+                <h2 className="text-xl font-semibold text-foreground">
+                  Детали заказа
+                </h2>
+
+                <motion.button
+                  {...tap}
                   onClick={() => setSelectedOrder(null)}
                   className="p-2 hover:bg-muted rounded-lg transition-colors"
                 >
                   <X className="w-5 h-5 text-muted-foreground" />
-                </button>
+                </motion.button>
               </div>
 
               <div className="space-y-4">
@@ -156,15 +201,20 @@ export function OrdersScreen({ onBack }: OrdersScreenProps) {
                       return <Icon className="w-6 h-6 text-primary" />
                     })()}
                   </div>
+
                   <div className="flex-1">
                     <div className="flex items-center justify-between gap-2 mb-2">
-                      <h3 className="text-lg font-semibold text-foreground">Тип заказа</h3>
+                      <h3 className="text-lg font-semibold text-foreground">
+                        Тип заказа
+                      </h3>
+
                       <span
                         className={`px-3 py-1 rounded-full text-sm whitespace-nowrap ${statusColors[selectedOrder.status]}`}
                       >
                         {statusLabels[selectedOrder.status]}
                       </span>
                     </div>
+
                     <p className="text-foreground">{selectedOrder.details}</p>
                   </div>
                 </div>
@@ -191,7 +241,9 @@ export function OrdersScreen({ onBack }: OrdersScreenProps) {
                       <Clock className="w-5 h-5 text-muted-foreground" />
                       <div>
                         <p className="text-sm text-muted-foreground">Время</p>
-                        <p className="text-foreground font-medium">{selectedOrder.time}</p>
+                        <p className="text-foreground font-medium">
+                          {selectedOrder.time}
+                        </p>
                       </div>
                     </div>
                   )}
@@ -218,16 +270,24 @@ export function OrdersScreen({ onBack }: OrdersScreenProps) {
         )}
       </AnimatePresence>
 
+      {/* DELETE CONFIRMATION */}
       <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
         <AlertDialogContent className="bg-card border-border">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-foreground">Удалить заказ?</AlertDialogTitle>
+            <AlertDialogTitle className="text-foreground">
+              Удалить заказ?
+            </AlertDialogTitle>
+
             <AlertDialogDescription className="text-muted-foreground">
               Это действие нельзя отменить. Заказ будет удален безвозвратно.
             </AlertDialogDescription>
           </AlertDialogHeader>
+
           <div className="flex gap-3 justify-end">
-            <AlertDialogCancel className="bg-muted text-foreground hover:bg-muted/80">Отмена</AlertDialogCancel>
+            <AlertDialogCancel className="bg-muted text-foreground hover:bg-muted/80">
+              Отмена
+            </AlertDialogCancel>
+
             <AlertDialogAction
               onClick={() => deleteConfirm && handleDeleteOrder(deleteConfirm)}
               className="bg-destructive text-white hover:bg-destructive/90"
@@ -237,6 +297,6 @@ export function OrdersScreen({ onBack }: OrdersScreenProps) {
           </div>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </motion.div>
   )
 }

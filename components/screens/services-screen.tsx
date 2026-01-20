@@ -1,7 +1,16 @@
 "use client"
 
 import { useState } from "react"
-import { ArrowLeft, Shirt, Sparkles, ShoppingBag, Brush, Check, AlertCircle, CheckSquare } from "lucide-react"
+import {
+  ArrowLeft,
+  Shirt,
+  Sparkles,
+  ShoppingBag,
+  Brush,
+  Check,
+  AlertCircle,
+  CheckSquare,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAppStore } from "@/lib/store"
 import { motion, AnimatePresence } from "framer-motion"
@@ -25,11 +34,14 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
   const [needBoard, setNeedBoard] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [showUnavailable, setShowUnavailable] = useState(false)
+  const [showReturnSuccess, setShowReturnSuccess] = useState(false)
+
   const { addOrder, guest, orders } = useAppStore()
 
-  // Подсчет активных утюгов (в заказах со статусом pending или confirmed)
   const activeIrons = orders.filter(
-    (order) => order.type === "iron" && (order.status === "pending" || order.status === "confirmed")
+    (order) =>
+      order.type === "iron" &&
+      (order.status === "pending" || order.status === "confirmed")
   ).length
 
   const canOrderIron = activeIrons < TOTAL_IRONS
@@ -53,27 +65,25 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
       setTimeout(() => setShowUnavailable(false), 2000)
       return
     }
-    if (serviceId === "supplies") {
-      setActiveService("supplies")
-    } else {
-      setActiveService(serviceId as ServiceType)
-    }
+    setActiveService(serviceId as ServiceType)
+  }
+
+  // Проверка времени доставки
+  const isDeliveryTimeValid = () => {
+    const [hours, minutes] = selectedTime.split(":").map(Number)
+    return hours >= 9 && (hours < 18 || (hours === 18 && minutes === 0))
   }
 
   const handleIronSubmit = async () => {
     if (!selectedDate || !selectedTime) return
-    if (!needIron && !needBoard) {
-      alert("Пожалуйста, выберите утюг или гладильную доску")
-      return
-    }
-    if (needIron && !canOrderIron) {
-      alert(`Все утюги заняты (доступно ${TOTAL_IRONS} штук). Пожалуйста, дождитесь возврата или закажите только гладильную доску.`)
-      return
-    }
+    if (!needIron && !needBoard) return
+
+    if (needIron && !canOrderIron) return
 
     const items = []
     if (needIron) items.push("утюг")
-    if (needBoard) items.push("гладильная доска")
+    if (needBoard) items.push("гладильную доску")
+
     const orderDetails = `${items.join(" и ")} на ${selectedDate} в ${selectedTime}`
 
     addOrder({
@@ -84,7 +94,6 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
       status: "pending",
     })
 
-    // Send to Telegram
     if (guest) {
       await sendToTelegram({
         type: "iron",
@@ -109,20 +118,14 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
   }
 
   const handleReturnIron = async () => {
-    // Найти последний заказ утюга этого гостя
     const ironOrders = orders
       .filter((order) => order.type === "iron" && order.status !== "completed")
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
-    if (ironOrders.length === 0) {
-      alert("У вас нет активных заказов утюга")
-      return
-    }
+    if (ironOrders.length === 0) return
 
-    // Помечаем как выполненный
     const orderToComplete = ironOrders[0]
-    // TODO: Обновить статус заказа в store (нужно добавить updateOrderStatus)
-    
+
     if (guest) {
       await sendToTelegram({
         type: "iron",
@@ -134,10 +137,29 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
         telegramId: guest.telegramId,
       })
     }
-    
-    alert("Утюг возвращен! Спасибо.")
+
+    setShowReturnSuccess(true)
+    setTimeout(() => setShowReturnSuccess(false), 2500)
   }
 
+  // Success screen for return
+  if (showReturnSuccess) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-center">
+          <div className="w-24 h-24 rounded-full bg-[#FFC107] flex items-center justify-center mx-auto mb-4">
+            <CheckSquare className="w-12 h-12 text-white" />
+          </div>
+          <h2 className="text-xl font-semibold text-foreground">Утюг будет возвращён</h2>
+          <p className="text-muted-foreground mt-2">
+            Горничная скоро подойдёт в номер {guest?.roomNumber}
+          </p>
+        </motion.div>
+      </div>
+    )
+  }
+
+  // Success screen for order
   if (showSuccess) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -152,6 +174,7 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
     )
   }
 
+  // Iron ordering screen
   if (activeService === "iron") {
     return (
       <AnimatePresence mode="wait">
@@ -163,86 +186,119 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
           transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
           className="min-h-screen bg-background flex flex-col app-screen"
         >
-        <div className="flex items-center justify-between p-4" style={{ paddingTop: `calc(1.5rem + 5rem)` }}>
-          <button onClick={() => setActiveService(null)} className="p-2 -ml-2">
-            <ArrowLeft className="w-6 h-6 text-foreground" />
-          </button>
-          <h1 className="text-lg font-semibold text-foreground">Заказ утюга</h1>
-          <div className="w-10" />
-        </div>
-        <div className="flex-1 px-4 py-6 space-y-4 overflow-y-auto">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Дата</label>
-            <Input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="bg-card border-border text-foreground h-12 w-full"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Время доставки</label>
-            <p className="text-sm text-primary">Доступно: 09:00 – 18:00</p>
-            <Input
-              type="time"
-              value={selectedTime}
-              onChange={(e) => setSelectedTime(e.target.value)}
-              min="09:00"
-              max="18:00"
-              className="bg-card border-border text-foreground h-12 w-full"
-            />
+          <div className="flex items-center justify-between p-4" style={{ paddingTop: `calc(1.5rem + 5rem)` }}>
+            <button onClick={() => setActiveService(null)} className="p-2 -ml-2">
+              <ArrowLeft className="w-6 h-6 text-foreground" />
+            </button>
+            <h1 className="text-lg font-semibold text-foreground">Заказ утюга</h1>
+            <div className="w-10" />
           </div>
 
-          <div className="space-y-3 pt-2">
-            <label className="text-sm font-medium text-foreground block">Что вам нужно?</label>
-            <div className="flex items-start gap-3">
-              <Checkbox
-                id="need-iron"
-                checked={needIron}
-                onCheckedChange={(checked) => setNeedIron(checked as boolean)}
-                className="mt-1 border-muted-foreground data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                disabled={!canOrderIron && !needIron}
-              />
-              <label htmlFor="need-iron" className="text-sm text-foreground leading-tight flex-1">
-                Утюг {!canOrderIron && !needIron && <span className="text-destructive">(все заняты, доступно {TOTAL_IRONS} штук)</span>}
-              </label>
+          <div className="flex-1 px-4 py-6 space-y-4 overflow-y-auto">
+
+            {/* Дата */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Дата</label>
+              <div className="relative overflow-hidden rounded-lg border border-border">
+                <Input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="bg-card text-foreground h-12 w-full px-4 appearance-none"
+                />
+              </div>
             </div>
-            <div className="flex items-start gap-3">
-              <Checkbox
-                id="need-board"
-                checked={needBoard}
-                onCheckedChange={(checked) => setNeedBoard(checked as boolean)}
-                className="mt-1 border-muted-foreground data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-              />
-              <label htmlFor="need-board" className="text-sm text-foreground leading-tight flex-1">
-                Гладильная доска
-              </label>
+
+            {/* Время */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Время доставки</label>
+              <p className="text-sm text-primary">Доступно: 09:00 – 18:00</p>
+
+              <div className="relative overflow-hidden rounded-lg border border-border">
+                <Input
+                  type="time"
+                  value={selectedTime}
+                  onChange={(e) => setSelectedTime(e.target.value)}
+                  className="bg-card text-foreground h-12 w-full px-4 appearance-none"
+                />
+              </div>
+
+              {/* Предупреждение */}
+              {!isDeliveryTimeValid() && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-xl p-3 flex items-center gap-3 text-sm"
+                >
+                  <AlertCircle className="w-5 h-5 shrink-0" />
+                  <span>
+                    К сожалению, доставка утюга в указанное время невозможна.  
+                    Услуга доступна с 09:00 до 18:00.
+                  </span>
+                </motion.div>
+              )}
+            </div>
+
+            {/* Что нужно */}
+            <div className="space-y-3 pt-2">
+              <label className="text-sm font-medium text-foreground block">Что вам нужно?</label>
+
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="need-iron"
+                  checked={needIron}
+                  onCheckedChange={(checked) => setNeedIron(checked as boolean)}
+                  className="mt-1 border-muted-foreground data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                  disabled={!canOrderIron && !needIron}
+                />
+                <label htmlFor="need-iron" className="text-sm text-foreground leading-tight flex-1">
+                  Утюг {!canOrderIron && !needIron && (
+                    <span className="text-destructive">(все заняты, доступно {TOTAL_IRONS} штук)</span>
+                  )}
+                </label>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="need-board"
+                  checked={needBoard}
+                  onCheckedChange={(checked) => setNeedBoard(checked as boolean)}
+                  className="mt-1 border-muted-foreground data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                />
+                <label htmlFor="need-board" className="text-sm text-foreground leading-tight flex-1">
+                  Гладильная доска
+                </label>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="p-4 space-y-3">
-          <Button
-            onClick={handleIronSubmit}
-            disabled={!selectedDate || !selectedTime || (!needIron && !needBoard)}
-            className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-          >
-            Заказать {needIron && needBoard ? "утюг и доску" : needIron ? "утюг" : "гладильную доску"}
-          </Button>
-          {orders.some((order) => order.type === "iron" && order.status !== "completed") && (
+
+          {/* Кнопки */}
+          <div className="p-4 space-y-3">
             <Button
-              onClick={handleReturnIron}
-              variant="outline"
-              className="w-full h-12 border-primary text-primary hover:bg-primary/10"
+              onClick={handleIronSubmit}
+              disabled={!selectedDate || !selectedTime || (!needIron && !needBoard)}
+              className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
-              Вернуть утюг
+              Заказать {needIron && needBoard ? "утюг и доску" : needIron ? "утюг" : "гладильную доску"}
             </Button>
-          )}
-        </div>
+
+            {orders.some((order) => order.type === "iron" && order.status !== "completed") && (
+              <Button
+                onClick={handleReturnIron}
+                variant="outline"
+                className="w-full h-12 border-primary text-primary hover:bg-primary/10"
+              >
+                Вернуть утюг
+              </Button>
+            )}
+          </div>
         </motion.div>
       </AnimatePresence>
     )
   }
 
+  // Supplies screen
   if (activeService === "supplies") {
     return (
       <AnimatePresence mode="wait">
@@ -254,39 +310,41 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
           transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
           className="min-h-screen bg-background flex flex-col app-screen"
         >
-        <div className="flex items-center justify-between p-4" style={{ paddingTop: `calc(1.5rem + 5rem)` }}>
-          <button onClick={() => setActiveService(null)} className="p-2 -ml-2">
-            <ArrowLeft className="w-6 h-6 text-foreground" />
-          </button>
-          <h1 className="text-lg font-semibold text-foreground">Расходники</h1>
-          <div className="w-10" />
-        </div>
-        <div className="flex-1 px-4 py-6">
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              { name: "Зубная щётка", price: 150 },
-              { name: "Зубная паста", price: 200 },
-              { name: "Шампунь", price: 300 },
-              { name: "Гель для душа", price: 300 },
-              { name: "Тапочки", price: 250 },
-              { name: "Халат", price: 500 },
-            ].map((item) => (
-              <button
-                key={item.name}
-                className="bg-card rounded-2xl p-4 text-left transition-scale active:scale-[0.98]"
-              >
-                <div className="w-full aspect-square bg-muted rounded-xl mb-3" />
-                <h3 className="font-medium text-foreground">{item.name}</h3>
-                <p className="text-primary">{item.price} ₽</p>
-              </button>
-            ))}
+          <div className="flex items-center justify-between p-4" style={{ paddingTop: `calc(1.5rem + 5rem)` }}>
+            <button onClick={() => setActiveService(null)} className="p-2 -ml-2">
+              <ArrowLeft className="w-6 h-6 text-foreground" />
+            </button>
+            <h1 className="text-lg font-semibold text-foreground">Расходники</h1>
+            <div className="w-10" />
           </div>
-        </div>
+
+          <div className="flex-1 px-4 py-6">
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { name: "Зубная щётка", price: 150 },
+                { name: "Зубная паста", price: 200 },
+                { name: "Шампунь", price: 300 },
+                { name: "Гель для душа", price: 300 },
+                { name: "Тапочки", price: 250 },
+                { name: "Халат", price: 500 },
+              ].map((item) => (
+                <button
+                  key={item.name}
+                  className="bg-card rounded-2xl p-4 text-left transition-scale active:scale-[0.98]"
+                >
+                  <div className="w-full aspect-square bg-muted rounded-xl mb-3" />
+                  <h3 className="font-medium text-foreground">{item.name}</h3>
+                  <p className="text-primary">{item.price} ₽</p>
+                </button>
+              ))}
+            </div>
+          </div>
         </motion.div>
       </AnimatePresence>
     )
   }
 
+  // Main services list
   return (
     <div className="min-h-screen bg-background">
       <div className="flex items-center justify-between p-4" style={{ paddingTop: `calc(1.5rem + 5rem)` }}>
