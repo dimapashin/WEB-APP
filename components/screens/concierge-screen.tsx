@@ -148,94 +148,141 @@ export function ConciergeScreen({ onBack }: { onBack: () => void }) {
 
   if (showSuccess) {
     return (
-      <motion.div {...fadeIn} className="min-h-screen bg-background flex items-center justify-center">
+      <motion.div
+        {...fadeIn}
+        className="min-h-screen bg-background flex items-center justify-center px-6"
+      >
         <motion.div {...scaleIn} className="text-center">
-          <div className="w-24 h-24 rounded-full bg-[#4CAF50] flex items-center justify-center mx-auto mb-4">
-            <Check className="w-12 h-12 text-white" />
+
+          {/* Premium success icon */}
+          <div className="w-24 h-24 rounded-3xl bg-primary/15 backdrop-blur-xl flex items-center justify-center mx-auto mb-6 shadow-xl border border-primary/20">
+            <Check className="w-12 h-12 text-primary" />
           </div>
-          <h2 className="text-xl font-semibold text-foreground">Заявка отправлена!</h2>
-          <p className="text-muted-foreground mt-2">Мы свяжемся с вами в ближайшее время</p>
+
+          <h2 className="text-xl font-semibold text-foreground">
+            Заявка отправлена
+          </h2>
+
+          <p className="text-muted-foreground mt-2 leading-relaxed">
+            Мы свяжемся с вами в ближайшее время
+          </p>
         </motion.div>
       </motion.div>
     )
   }
+/* ---------------- TAXI ---------------- */
 
-  /* ---------------- TAXI ---------------- */
+if (activeService === "taxi") {
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key="taxi"
+        {...screenTransition}
+        className="min-h-screen bg-background flex flex-col app-screen"
+      >
 
-  if (activeService === "taxi") {
-    return (
-      <AnimatePresence mode="wait">
-        <motion.div key="taxi" {...screenTransition} className="min-h-screen bg-background flex flex-col app-screen">
+        {/* HEADER */}
+        <div
+          className="flex items-center justify-between px-4 pb-4"
+          style={{ paddingTop: "calc(env(safe-area-inset-top) + 1.25rem)" }}
+        >
+          <motion.button {...tap} onClick={() => setActiveService(null)} className="p-2 -ml-2">
+            <ArrowLeft className="w-6 h-6 text-foreground" />
+          </motion.button>
 
-          {/* HEADER */}
-          <div className="flex items-center justify-between px-4 pb-4"
-               style={{ paddingTop: "calc(env(safe-area-inset-top) + 1.25rem)" }}>
-            <motion.button {...tap} onClick={() => setActiveService(null)} className="p-2 -ml-2">
-              <ArrowLeft className="w-6 h-6 text-foreground" />
-            </motion.button>
-            <h1 className="text-lg font-semibold text-foreground">Заказ такси</h1>
-            <div className="w-10" />
-          </div>
+          <h1 className="text-lg font-semibold text-foreground">Заказ такси</h1>
 
-          {/* CONTENT */}
-          <div className="flex-1 px-4 pb-[env(safe-area-inset-bottom)] space-y-4 overflow-y-auto">
+          <div className="w-10" />
+        </div>
 
-            <motion.div {...fadeInUp(0.05)} className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Дата</label>
-              <Input type="date" value={taxiDate} onChange={(e) => setTaxiDate(e.target.value)}
-                     className="bg-card text-foreground h-12 w-full px-4 border border-border rounded-lg" />
-            </motion.div>
+        {/* CONTENT */}
+        <div className="flex-1 px-4 pb-[env(safe-area-inset-bottom)] space-y-6 overflow-y-auto">
 
-            <motion.div {...fadeInUp(0.1)} className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Время</label>
-              <Input type="time" value={taxiTime} onChange={(e) => setTaxiTime(e.target.value)}
-                     className="bg-card text-foreground h-12 w-full px-4 border border-border rounded-lg" />
-            </motion.div>
+          {/* DATE */}
+          <motion.div {...fadeInUp(0.05)} className="space-y-2">
+            <label className="text-sm font-medium text-foreground">Дата</label>
 
-            <motion.div {...fadeInUp(0.15)} className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Место назначения</label>
-              <Input placeholder="Например: Эрмитаж" value={taxiAddress}
-                     onChange={(e) => setTaxiAddress(e.target.value)}
-                     className="bg-card border-border text-foreground placeholder:text-muted-foreground h-12 w-full" />
-            </motion.div>
-
-            <motion.div {...fadeInUp(0.2)} className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Комментарий (необязательно)</label>
-              <textarea
-                placeholder="Класс авто, детское кресло, особые пожелания"
-                value={taxiComment}
-                onChange={(e) => setTaxiComment(e.target.value)}
-                className="w-full bg-card border border-border rounded-xl p-3 text-foreground placeholder:text-muted-foreground text-sm min-h-[120px] resize-none"
+            <div className="bg-card/60 border border-border/60 rounded-xl h-14 flex items-center px-4 shadow-sm backdrop-blur-sm">
+              <Input
+                type="date"
+                value={taxiDate}
+                onChange={(e) => setTaxiDate(e.target.value)}
+                className="bg-transparent border-none text-foreground h-full px-0 focus-visible:ring-0"
               />
-            </motion.div>
+            </div>
+          </motion.div>
 
-            <motion.div {...fadeInUp(0.25)} className="flex items-start gap-3 pt-2">
-              <Checkbox
-                id="child-seat"
-                checked={needChildSeat}
-                onCheckedChange={(checked) => setNeedChildSeat(checked as boolean)}
-                className="mt-1 border-muted-foreground data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+          {/* TIME */}
+          <motion.div {...fadeInUp(0.1)} className="space-y-2">
+            <label className="text-sm font-medium text-foreground">Время</label>
+
+            <div className="bg-card/60 border border-border/60 rounded-xl h-14 flex items-center px-4 shadow-sm backdrop-blur-sm">
+              <Input
+                type="time"
+                value={taxiTime}
+                onChange={(e) => setTaxiTime(e.target.value)}
+                className="bg-transparent border-none text-foreground h-full px-0 focus-visible:ring-0"
               />
-              <label htmlFor="child-seat" className="text-sm text-foreground leading-tight">
-                Нужно детское кресло
-              </label>
-            </motion.div>
+            </div>
+          </motion.div>
 
-          </div>
+          {/* ADDRESS */}
+          <motion.div {...fadeInUp(0.15)} className="space-y-2">
+            <label className="text-sm font-medium text-foreground">Место назначения</label>
 
-          <div className="p-4">
-            <motion.button {...tap}
-              onClick={handleTaxiSubmit}
-              disabled={!taxiDate || !taxiTime || !taxiAddress}
-              className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 rounded-xl">
-              Заказать такси
-            </motion.button>
-          </div>
+            <div className="bg-card/60 border border-border/60 rounded-xl h-14 flex items-center px-4 shadow-sm backdrop-blur-sm">
+              <Input
+                placeholder="Например: Эрмитаж"
+                value={taxiAddress}
+                onChange={(e) => setTaxiAddress(e.target.value)}
+                className="bg-transparent border-none text-foreground placeholder:text-muted-foreground h-full px-0 focus-visible:ring-0"
+              />
+            </div>
+          </motion.div>
 
-        </motion.div>
-      </AnimatePresence>
-    )
-  }
+          {/* COMMENT */}
+          <motion.div {...fadeInUp(0.2)} className="space-y-2">
+            <label className="text-sm font-medium text-foreground">Комментарий (необязательно)</label>
+
+            <textarea
+              placeholder="Класс авто, детское кресло, особые пожелания"
+              value={taxiComment}
+              onChange={(e) => setTaxiComment(e.target.value)}
+              className="w-full bg-card/60 border border-border/60 rounded-xl p-4 text-foreground placeholder:text-muted-foreground text-sm min-h-[120px] shadow-sm backdrop-blur-sm"
+            />
+          </motion.div>
+
+          {/* CHILD SEAT */}
+          <motion.div {...fadeInUp(0.25)} className="flex items-start gap-3 pt-2">
+            <Checkbox
+              id="child-seat"
+              checked={needChildSeat}
+              onCheckedChange={(checked) => setNeedChildSeat(checked as boolean)}
+              className="mt-1 border-muted-foreground data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+            />
+            <label htmlFor="child-seat" className="text-sm text-foreground leading-tight">
+              Нужно детское кресло
+            </label>
+          </motion.div>
+
+        </div>
+
+        {/* SUBMIT */}
+        <div className="p-4">
+          <motion.button
+            {...tap}
+            onClick={handleTaxiSubmit}
+            disabled={!taxiDate || !taxiTime || !taxiAddress}
+            className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 rounded-xl"
+          >
+            Заказать такси
+          </motion.button>
+        </div>
+
+      </motion.div>
+    </AnimatePresence>
+  )
+}
 
   /* ---------------- RESTAURANT ---------------- */
 

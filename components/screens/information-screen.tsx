@@ -21,17 +21,41 @@ interface InformationScreenProps {
 }
 
 const INFORMATION_CARDS = [
-  { id: "wifi", title: "Wi-Fi", subtitle: "Подключение к интернету", icon: Wifi, component: <WifiSection /> },
-  { id: "feedback", title: "Оставить отзыв", subtitle: "Поделитесь впечатлениями", icon: Star, component: <FeedbackSection /> },
-  { id: "offers", title: "Акции", subtitle: "Специальные предложения", icon: Gift, component: <OffersSection /> },
-  { id: "animals", title: "Проживание с животными", subtitle: "Условия для питомцев", icon: Heart, component: <AnimalsSection /> },
+  {
+    id: "wifi",
+    title: "Wi‑Fi",
+    subtitle: "Подключение к интернету",
+    icon: Wifi,
+    component: <WifiSection />,
+  },
+  {
+    id: "feedback",
+    title: "Оставить отзыв",
+    subtitle: "Поделитесь впечатлениями",
+    icon: Star,
+    component: <FeedbackSection />,
+  },
+  {
+    id: "offers",
+    title: "Акции",
+    subtitle: "Специальные предложения",
+    icon: Gift,
+    component: <OffersSection />,
+  },
+  {
+    id: "animals",
+    title: "Проживание с животными",
+    subtitle: "Условия для питомцев",
+    icon: Heart,
+    component: <AnimalsSection />,
+  },
 ]
 
 export function InformationScreen({ onBack }: InformationScreenProps) {
   const t = useT()
   const [activeCard, setActiveCard] = useState<string | null>(null)
 
-  const selectedCard = INFORMATION_CARDS.find(card => card.id === activeCard)
+  const selectedCard = INFORMATION_CARDS.find((card) => card.id === activeCard)
 
   /* ---------------------- SUBSCREEN ---------------------- */
 
@@ -48,11 +72,7 @@ export function InformationScreen({ onBack }: InformationScreenProps) {
             className="flex items-center justify-between px-4 pb-4"
             style={{ paddingTop: "calc(env(safe-area-inset-top) + 1.25rem)" }}
           >
-            <motion.button
-              onClick={() => setActiveCard(null)}
-              className="p-2 -ml-2"
-              {...tap}
-            >
+            <motion.button {...tap} onClick={() => setActiveCard(null)} className="p-2 -ml-2">
               <ChevronLeft className="w-6 h-6 text-foreground" />
             </motion.button>
 
@@ -65,8 +85,8 @@ export function InformationScreen({ onBack }: InformationScreenProps) {
 
           {/* CONTENT */}
           <motion.div
-            className="flex-1 overflow-y-auto px-4 pb-[env(safe-area-inset-bottom)]"
             {...fadeInUp(0.1)}
+            className="flex-1 overflow-y-auto px-4 pb-[env(safe-area-inset-bottom)]"
           >
             {selectedCard.component}
           </motion.div>
@@ -87,11 +107,7 @@ export function InformationScreen({ onBack }: InformationScreenProps) {
         className="flex items-center justify-between px-4 pb-4"
         style={{ paddingTop: "calc(env(safe-area-inset-top) + 1.25rem)" }}
       >
-        <motion.button
-          onClick={onBack}
-          className="p-2 -ml-2"
-          {...tap}
-        >
+        <motion.button {...tap} onClick={onBack} className="p-2 -ml-2">
           <ChevronLeft className="w-6 h-6 text-foreground" />
         </motion.button>
 
@@ -104,24 +120,55 @@ export function InformationScreen({ onBack }: InformationScreenProps) {
 
       {/* CARDS */}
       <div className="px-4 pb-[env(safe-area-inset-bottom)] space-y-4">
-        {INFORMATION_CARDS.map((card, index) => (
-          <motion.button
-            key={card.id}
-            {...fadeInUp(index * 0.05)}
-            onClick={() => setActiveCard(card.id)}
-            className="w-full bg-card rounded-2xl p-4 flex items-center gap-4 hover:bg-card/80 transition-colors"
-            {...tap}
-          >
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-              <card.icon className="w-6 h-6 text-primary" />
-            </div>
+        {INFORMATION_CARDS.map((card, index) => {
+          const isFeedback = card.id === "feedback"
 
-            <div className="text-left flex-1">
-              <h3 className="font-medium text-foreground">{card.title}</h3>
-              <p className="text-sm text-muted-foreground">{card.subtitle}</p>
-            </div>
-          </motion.button>
-        ))}
+          return (
+            <motion.button
+              key={card.id}
+              {...fadeInUp(index * 0.05)}
+              {...tap}
+              onClick={() => setActiveCard(card.id)}
+              className={`
+                w-full rounded-2xl p-4 flex items-center gap-4 transition-all
+                ${isFeedback
+                  ? "bg-primary/10 border border-primary/20 shadow-md backdrop-blur-sm"
+                  : "bg-card/60 border border-border/60 shadow-sm backdrop-blur-sm"
+                }
+                hover:bg-card/80
+              `}
+            >
+              <div
+                className={`
+                  w-12 h-12 rounded-xl flex items-center justify-center shrink-0
+                  ${isFeedback ? "bg-primary/20" : "bg-primary/10"}
+                `}
+              >
+                <card.icon
+                  className={`
+                    w-6 h-6
+                    ${isFeedback ? "text-primary" : "text-primary"}
+                  `}
+                />
+              </div>
+
+              <div className="text-left flex-1">
+                <h3
+                  className={`
+                    font-medium text-foreground
+                    ${isFeedback ? "text-primary" : ""}
+                  `}
+                >
+                  {card.title}
+                </h3>
+
+                <p className="text-sm text-muted-foreground">
+                  {card.subtitle}
+                </p>
+              </div>
+            </motion.button>
+          )
+        })}
       </div>
     </motion.div>
   )

@@ -2,7 +2,6 @@
 
 import { ChevronLeft, MapPin, Phone, Mail } from "lucide-react"
 import { VidiLogo } from "@/components/ui/vidi-logo"
-import { Button } from "@/components/ui/button"
 import { useT } from "@/lib/i18n"
 import { motion } from "framer-motion"
 import { screenTransition, fadeInUp, tap, scaleIn } from "@/lib/animations"
@@ -42,11 +41,7 @@ export function AboutScreen({ onBack }: AboutScreenProps) {
         className="flex items-center justify-between px-4 pb-4"
         style={{ paddingTop: "calc(env(safe-area-inset-top) + 1.25rem)" }}
       >
-        <motion.button
-          onClick={onBack}
-          className="p-2 -ml-2"
-          {...tap}
-        >
+        <motion.button {...tap} onClick={onBack} className="p-2 -ml-2">
           <ChevronLeft className="w-6 h-6 text-foreground" />
         </motion.button>
 
@@ -58,18 +53,15 @@ export function AboutScreen({ onBack }: AboutScreenProps) {
       </div>
 
       {/* CONTENT */}
-      <div className="px-4 pb-[env(safe-area-inset-bottom)] space-y-6">
+      <div className="px-4 pb-[env(safe-area-inset-bottom)] space-y-8">
 
         {/* Logo + Description */}
-        <motion.div
-          className="text-center"
-          {...fadeInUp(0.05)}
-        >
+        <motion.div className="text-center space-y-3" {...fadeInUp(0.05)}>
           <motion.div {...scaleIn}>
             <VidiLogo className="w-28 h-auto mx-auto text-primary mb-2" />
           </motion.div>
 
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-sm leading-relaxed">
             {t("about.description")}
           </p>
         </motion.div>
@@ -99,10 +91,10 @@ export function AboutScreen({ onBack }: AboutScreenProps) {
             <motion.div
               key={i}
               {...fadeInUp(0.1 + i * 0.05)}
-              className="bg-card rounded-2xl p-4"
+              className="bg-card/60 border border-border/60 rounded-2xl p-4 shadow-sm backdrop-blur-sm"
             >
               <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                   {item.icon}
                 </div>
 
@@ -130,10 +122,10 @@ export function AboutScreen({ onBack }: AboutScreenProps) {
         {/* Additional Info */}
         <motion.div
           {...fadeInUp(0.25)}
-          className="bg-card rounded-2xl p-4 space-y-3"
+          className="bg-card/60 border border-border/60 rounded-2xl p-4 shadow-sm backdrop-blur-sm space-y-4"
         >
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
               <Phone className="w-5 h-5 text-primary" />
             </div>
             <div>
@@ -143,7 +135,7 @@ export function AboutScreen({ onBack }: AboutScreenProps) {
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
               <MapPin className="w-5 h-5 text-primary" />
             </div>
             <div>
@@ -154,7 +146,7 @@ export function AboutScreen({ onBack }: AboutScreenProps) {
         </motion.div>
 
         {/* Social Links */}
-        <motion.div {...fadeInUp(0.3)} className="space-y-4">
+        <motion.div {...fadeInUp(0.3)} className="space-y-3">
           <h3 className="text-sm font-medium text-foreground px-2">
             {t("about.follow_us")}
           </h3>
@@ -166,15 +158,16 @@ export function AboutScreen({ onBack }: AboutScreenProps) {
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors"
+                className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors shadow-sm backdrop-blur-sm"
                 title={link.label}
                 {...fadeInUp(0.35 + i * 0.05)}
               >
-                <img src={link.icon} alt={link.label} className="w-10 h-10" />
+                <img src={link.icon} alt={link.label} className="w-9 h-9" />
               </motion.a>
             ))}
           </div>
         </motion.div>
+
       </div>
     </motion.div>
   )
