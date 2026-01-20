@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useAppStore } from "@/lib/store"
 import { useT, useLanguage } from "@/lib/i18n"
-import { CheckoutDatesScreen } from "./checkout-dates-screen"
 import { Languages } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 
 interface AuthScreenProps {
   onSuccess: () => void
@@ -68,24 +68,26 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
     onSuccess()
   }
 
-  if (step === "dates") {
-    return (
-      <CheckoutDatesScreen
-        guestName={name}
-        roomNumber={roomNumber}
-        onConfirm={handleDatesConfirm}
-        onBack={() => setStep("credentials")}
-      />
-    )
+  const today = new Date().toISOString().split("T")[0]
+  const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0]
+  const [checkInDate, setCheckInDate] = useState(today)
+  const [checkoutDate, setCheckoutDate] = useState(tomorrow)
+  const datesValid = checkInDate && checkoutDate && new Date(checkoutDate) > new Date(checkInDate)
+
+  const handleDatesSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (datesValid) {
+      handleDatesConfirm(checkInDate, checkoutDate)
+    }
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 relative auth-screen" style={{ scrollBehavior: "smooth" }}>
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 relative auth-screen" style={{ scrollBehavior: "smooth", paddingTop: '120px', paddingBottom: '120px' }}>
       <Button
         onClick={() => setLanguage(language === "ru" ? "en" : "ru")}
         variant="outline"
         size="icon"
-        className="absolute right-6 h-9 w-16 border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary font-semibold transition-all duration-200 shadow-sm z-10"
+        className="absolute left-6 h-9 w-16 border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary font-semibold transition-all duration-200 shadow-sm z-10"
         style={{ top: "max(1.5rem, env(safe-area-inset-top))" }}
       >
         <Languages className="w-4 h-4 mr-1" />
@@ -152,6 +154,59 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
           </Button>
         </form>
       </div>
+
+      {/* Dates Modal */}
+      <AnimatePresence>
+        {step === "dates" && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+            onClick={() => setStep("credentials")}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-card/95 backdrop-blur-sm rounded-2xl p-6 max-w-sm w-full space-y-4 border border-border"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-lg font-semibold text-foreground text-center">Уточнение дат</h2>
+              <form onSubmit={handleDatesSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Дата заезда</label>
+                  <Input
+                    type="date"
+                    value={checkInDate}
+                    onChange={(e) => setCheckInDate(e.target.value)}
+                    className="bg-background border-border text-foreground h-12"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Дата выезда</label>
+                  <Input
+                    type="date"
+                    value={checkoutDate}
+                    onChange={(e) => setCheckoutDate(e.target.value)}
+                    className="bg-background border-border text-foreground h-12"
+                    min={checkInDate}
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={!datesValid}
+                  className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                >
+                  Подтвердить
+                </Button>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

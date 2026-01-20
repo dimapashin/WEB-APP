@@ -26,6 +26,7 @@ export function WifiSection() {
       roomNumber: guest?.roomNumber || "Не указан",
       guestName: guest?.name || "Не указан",
       details: `Ваучер: ${voucher}. Запрос на подключение к сети Wi-Fi "VIDI".`,
+      telegramId: guest?.telegramId,
     })
 
     setIsLoading(false)
@@ -55,7 +56,7 @@ export function WifiSection() {
             <div>
               <h4 className="font-medium text-foreground">Найдите сеть</h4>
               <p className="text-sm text-muted-foreground mt-1">
-                В настройках Wi-Fi выберите сеть <strong className="text-foreground">"VIDI_Hotel"</strong>
+                В настройках Wi-Fi выберите сеть <strong className="text-foreground">"VIDI"</strong>
               </p>
             </div>
           </div>
@@ -65,21 +66,19 @@ export function WifiSection() {
               <span className="text-primary font-semibold text-sm">2</span>
             </div>
             <div>
-              <h4 className="font-medium text-foreground">Введите ваучер</h4>
+              <h4 className="font-medium text-foreground">Подключитесь по номеру телефона или ваучеру</h4>
               <p className="text-sm text-muted-foreground mt-1">После подключения откроется страница авторизации</p>
             </div>
           </div>
-
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-              <span className="text-primary font-semibold text-sm">3</span>
-            </div>
-            <div>
-              <h4 className="font-medium text-foreground">Или используйте форму ниже</h4>
-              <p className="text-sm text-muted-foreground mt-1">Мы подключим вас удаленно</p>
-            </div>
-          </div>
         </div>
+      </div>
+
+      <div className="bg-card rounded-2xl p-4 space-y-4">
+        <h3 className="font-semibold text-foreground">Подключение по номеру телефона</h3>
+        <p className="text-sm text-muted-foreground">Используйте номер телефона, указанный при бронировании</p>
+        <Button onClick={handleConnectWifi} disabled={isLoading} className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90">
+          {isLoading ? "Отправка..." : "Подключить Wi-Fi по номеру"}
+        </Button>
       </div>
 
       <div className="bg-card rounded-2xl p-4 space-y-4">
@@ -97,13 +96,10 @@ export function WifiSection() {
             <span className="text-sm">Заявка отправлена! Мы подключим Wi-Fi в течение 15 минут.</span>
           </div>
         ) : (
-          <Button onClick={handleConnectWifi} disabled={isLoading} className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90">
-            {isLoading ? "Отправка..." : "Подключить Wi-Fi"}
+          <Button onClick={handleConnectWifi} disabled={isLoading || !voucher.trim()} className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90">
+            {isLoading ? "Отправка..." : "Подключить Wi-Fi по ваучеру"}
           </Button>
         )}
-        <p className="text-xs text-muted-foreground text-center">
-          Если у вас нет ваучера, обратитесь на ресепшен для получения доступа
-        </p>
       </div>
     </div>
   )

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ArrowLeft, Car, UtensilsCrossed, Map, Heart, Check, AlertCircle, MapPin, Clock, X } from "lucide-react"
+import { ArrowLeft, Car, UtensilsCrossed, Map, Heart, Check, AlertCircle, MapPin, Clock, X, Minus, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -41,12 +41,10 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
   const [taxiDate, setTaxiDate] = useState("")
   const [taxiTime, setTaxiTime] = useState("10:00")
   const [taxiAddress, setTaxiAddress] = useState("")
-  const [taxiSuggestions, setTaxiSuggestions] = useState<string[]>([])
   const [taxiComment, setTaxiComment] = useState("")
   const [needChildSeat, setNeedChildSeat] = useState(false)
   const [restaurantName, setRestaurantName] = useState("")
-  const [restaurantSuggestions, setRestaurantSuggestions] = useState<string[]>([])
-  const [restaurantGuests, setRestaurantGuests] = useState("")
+  const [restaurantGuests, setRestaurantGuests] = useState("1")
   const [restaurantDate, setRestaurantDate] = useState("")
   const [restaurantTime, setRestaurantTime] = useState("19:00")
   const [showSuccess, setShowSuccess] = useState(false)
@@ -104,6 +102,7 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
         details: orderDetails,
         date: taxiDate,
         time: taxiTime,
+        telegramId: guest.telegramId,
       })
     }
 
@@ -115,7 +114,6 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
       setTaxiTime("10:00")
       setTaxiAddress("")
       setTaxiComment("")
-      setTaxiSuggestions([])
       setNeedChildSeat(false)
     }, 2000)
   }
@@ -142,6 +140,7 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
         details: orderDetails,
         date: restaurantDate,
         time: restaurantTime,
+        telegramId: guest.telegramId,
       })
     }
 
@@ -150,10 +149,9 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
       setShowSuccess(false)
       setActiveService(null)
       setRestaurantName("")
-      setRestaurantGuests("")
+      setRestaurantGuests("1")
       setRestaurantDate("")
       setRestaurantTime("19:00")
-      setRestaurantSuggestions([])
     }, 2000)
   }
 
@@ -174,7 +172,7 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
   if (activeService === "taxi") {
     return (
       <div className="min-h-screen bg-background flex flex-col app-screen">
-        <div className="flex items-center justify-between p-4">
+        <div className="flex items-center justify-between p-4" style={{ paddingTop: `calc(1.5rem + 5rem)` }}>
           <button onClick={() => setActiveService(null)} className="p-2 -ml-2">
             <ArrowLeft className="w-6 h-6 text-foreground" />
           </button>
@@ -183,7 +181,7 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
         </div>
         <div className="flex-1 px-4 py-6 space-y-4 overflow-y-auto">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground block mb-2">Дата</label>
+            <label className="text-sm font-medium text-foreground block">Дата</label>
             <Input
               type="date"
               value={taxiDate}
@@ -192,7 +190,7 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground block mb-2">Время</label>
+            <label className="text-sm font-medium text-foreground block">Время</label>
             <Input
               type="time"
               value={taxiTime}
@@ -201,7 +199,7 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground block mb-2">Место назначения</label>
+            <label className="text-sm font-medium text-foreground block">Место назначения</label>
             <Input
               placeholder="Например: Эрмитаж"
               value={taxiAddress}
@@ -210,9 +208,9 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground block mb-2">Комментарий (необязательно)</label>
+            <label className="text-sm font-medium text-foreground block">Комментарий (необязательно)</label>
             <textarea
-              placeholder="Класс авто, детское кресло, особые пожелания"
+              placeholder="Гости могут указать класс автомобиля, нужно ли детское кресло и другие особые пожелания"
               value={taxiComment}
               onChange={(e) => setTaxiComment(e.target.value)}
               className="w-full bg-card border border-border rounded-xl p-3 text-foreground placeholder:text-muted-foreground text-sm min-h-[120px] resize-none"
@@ -246,7 +244,7 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
   if (activeService === "restaurant") {
     return (
       <div className="min-h-screen bg-background flex flex-col app-screen">
-        <div className="flex items-center justify-between p-4">
+        <div className="flex items-center justify-between p-4" style={{ paddingTop: `calc(1.5rem + 5rem)` }}>
           <button onClick={() => setActiveService(null)} className="p-2 -ml-2">
             <ArrowLeft className="w-6 h-6 text-foreground" />
           </button>
@@ -254,129 +252,65 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
           <div className="w-10" />
         </div>
         <div className="flex-1 px-4 py-6 space-y-6 overflow-y-auto">
-          {/* Modern Header */}
-          <div className="flex items-center gap-4 mb-2">
-            <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
-              <UtensilsCrossed className="w-7 h-7 text-primary" />
-            </div>
-            <div>
-              <h2 className="text-xl font-semibold text-foreground">Бронирование ресторана</h2>
-              <p className="text-sm text-muted-foreground">Мы поможем забронировать столик</p>
-            </div>
-          </div>
-
-          {/* Restaurant Name with Suggestions */}
+          {/* Restaurant Name */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Название ресторана</label>
-            <div className="relative">
-              <Input
-                placeholder="Введите название или выберите из популярных..."
-                value={restaurantName}
-                onChange={(e) => {
-                  setRestaurantName(e.target.value)
-                  const filtered = POPULAR_RESTAURANTS.filter((r) =>
-                    r.name.toLowerCase().includes(e.target.value.toLowerCase())
-                  ).map((r) => r.name)
-                  setRestaurantSuggestions(filtered.slice(0, 5))
-                }}
-                onFocus={() => {
-                  if (restaurantName) {
-                    const filtered = POPULAR_RESTAURANTS.filter((r) =>
-                      r.name.toLowerCase().includes(restaurantName.toLowerCase())
-                    ).map((r) => r.name)
-                    setRestaurantSuggestions(filtered.slice(0, 5))
-                  }
-                }}
-                className="bg-card border-border text-foreground placeholder:text-muted-foreground h-12"
-              />
-              {restaurantSuggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl overflow-hidden z-50 shadow-lg">
-                  {restaurantSuggestions.map((suggestion, idx) => {
-                    const restaurant = POPULAR_RESTAURANTS.find((r) => r.name === suggestion)
-                    return (
-                      <button
-                        key={idx}
-                        onClick={() => {
-                          setRestaurantName(suggestion)
-                          setRestaurantSuggestions([])
-                        }}
-                        className="w-full px-4 py-3 text-left hover:bg-muted transition-colors"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <span className="text-lg">{restaurant?.icon}</span>
-                            <div>
-                              <p className="text-foreground font-medium">{suggestion}</p>
-                              <p className="text-xs text-muted-foreground">{restaurant?.cuisine}</p>
-                            </div>
-                          </div>
-                          <span className="text-xs text-primary">⭐ {restaurant?.rating}</span>
-                        </div>
-                      </button>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Popular Restaurants */}
-          <div className="space-y-3">
-            <p className="text-sm font-medium text-foreground">Популярные рестораны:</p>
-            <div className="grid grid-cols-2 gap-3">
-              {POPULAR_RESTAURANTS.slice(0, 4).map((restaurant, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setRestaurantName(restaurant.name)}
-                  className="bg-card border border-border rounded-xl p-3 text-left hover:border-primary/50 hover:bg-primary/5 transition-all"
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-lg">{restaurant.icon}</span>
-                    <span className="text-xs text-primary">⭐ {restaurant.rating}</span>
-                  </div>
-                  <p className="text-sm font-medium text-foreground">{restaurant.name}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{restaurant.cuisine}</p>
-                </button>
-              ))}
-            </div>
+            <Input
+              placeholder="Введите название ресторана"
+              value={restaurantName}
+              onChange={(e) => setRestaurantName(e.target.value)}
+              className="bg-card border-border text-foreground placeholder:text-muted-foreground h-12"
+            />
           </div>
 
           {/* Guests, Date and Time */}
           <div className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Количество гостей</label>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    const num = parseInt(restaurantGuests) || 1
+                    if (num > 1) setRestaurantGuests(String(num - 1))
+                  }}
+                  className="w-10 h-12 rounded-xl bg-muted flex items-center justify-center"
+                >
+                  <Minus className="w-4 h-4 text-foreground" />
+                </button>
+                <Input
+                  value={restaurantGuests}
+                  onChange={(e) => setRestaurantGuests(e.target.value.replace(/\D/g, ""))}
+                  inputMode="numeric"
+                  className="bg-card border-border text-foreground text-center h-12 flex-1"
+                />
+                <button
+                  onClick={() => {
+                    const num = parseInt(restaurantGuests) || 0
+                    setRestaurantGuests(String(num + 1))
+                  }}
+                  className="w-10 h-12 rounded-xl bg-primary flex items-center justify-center"
+                >
+                  <Plus className="w-4 h-4 text-primary-foreground" />
+                </button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Дата</label>
               <Input
-                placeholder="2"
-                value={restaurantGuests}
-                onChange={(e) => setRestaurantGuests(e.target.value.replace(/\D/g, ""))}
-                inputMode="numeric"
-                className="bg-card border-border text-foreground placeholder:text-muted-foreground h-12"
+                type="date"
+                value={restaurantDate}
+                onChange={(e) => setRestaurantDate(e.target.value)}
+                className="bg-card border-border text-foreground h-12 w-full"
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Дата</label>
-                <Input
-                  type="date"
-                  value={restaurantDate}
-                  onChange={(e) => setRestaurantDate(e.target.value)}
-                  className="bg-card border-border text-foreground h-12"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Время</label>
-                <div className="relative">
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                    <Clock className="w-4 h-4 text-muted-foreground" />
-                  </div>
-                  <Input
-                    type="time"
-                    value={restaurantTime}
-                    onChange={(e) => setRestaurantTime(e.target.value)}
-                    className="bg-card border-border text-foreground h-12 pl-10"
-                  />
-                </div>
-              </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Время</label>
+              <Input
+                type="time"
+                value={restaurantTime}
+                onChange={(e) => setRestaurantTime(e.target.value)}
+                className="bg-card border-border text-foreground h-12 w-full"
+              />
             </div>
           </div>
         </div>
@@ -396,7 +330,7 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
   if (activeService === "excursion") {
     return (
       <div className="min-h-screen bg-background app-screen">
-        <div className="flex items-center justify-between p-4">
+        <div className="flex items-center justify-between p-4" style={{ paddingTop: `calc(1.5rem + 5rem)` }}>
           <button onClick={() => setActiveService(null)} className="p-2 -ml-2">
             <ArrowLeft className="w-6 h-6 text-foreground" />
           </button>
@@ -456,7 +390,7 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
   if (activeService === "decoration") {
     return (
       <div className="min-h-screen bg-background app-screen">
-        <div className="flex items-center justify-between p-4">
+        <div className="flex items-center justify-between p-4" style={{ paddingTop: `calc(1.5rem + 5rem)` }}>
           <button onClick={() => setActiveService(null)} className="p-2 -ml-2">
             <ArrowLeft className="w-6 h-6 text-foreground" />
           </button>
@@ -516,7 +450,7 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
 
   return (
     <div className="min-h-screen bg-background app-screen">
-      <div className="flex items-center justify-between p-4">
+      <div className="flex items-center justify-between p-4" style={{ paddingTop: `calc(1.5rem + 5rem)` }}>
         <button onClick={onBack} className="p-2 -ml-2">
           <ArrowLeft className="w-6 h-6 text-foreground" />
         </button>

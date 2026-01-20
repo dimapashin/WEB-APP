@@ -122,6 +122,7 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
         date: checkoutDate,
         amount: cartTotal,
         paymentMethod: paymentMethod,
+        telegramId: guest.telegramId,
       })
     }
 
@@ -150,14 +151,10 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
   return (
     <div className="min-h-screen bg-background flex flex-col app-screen breakfast-screen">
       {/* Header */}
-      <div className="flex items-center justify-between p-4">
-        <Button
-          onClick={onBack}
-          variant="ghost"
-          className="p-2 h-auto text-foreground hover:text-primary"
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </Button>
+      <div className="flex items-center justify-between p-4" style={{ paddingTop: `calc(1.5rem + 5rem)` }}>
+        <button onClick={onBack} className="p-2 -ml-2">
+          <ChevronLeft className="w-6 h-6 text-foreground" />
+        </button>
         <h1 className="text-lg font-semibold text-foreground">{t("breakfast.title")}</h1>
         <button onClick={() => setShowCart(true)} className="relative p-2">
           <ShoppingCart className="w-6 h-6 text-foreground hover:text-primary transition-colors" />
@@ -175,7 +172,7 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
           modules={[Pagination, Navigation]}
           spaceBetween={0}
           slidesPerView={1}
-          loop={true}
+          loop={false}
           noSwiping={false}
           centeredSlides={true}
           pagination={{ clickable: true }}
@@ -183,7 +180,7 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
             nextEl: '.swiper-button-next',
             prevEl: '.swiper-button-prev',
           }}
-          onSlideChange={(swiper) => setSelectedIndex(swiper.realIndex)}
+          onSlideChange={(swiper) => setSelectedIndex(swiper.activeIndex)}
           className="mySwiper"
         >
           {breakfastComplexes.map((complex, index) => (
@@ -395,8 +392,8 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
               <h2 className="text-xl font-semibold text-foreground mb-6">{t("breakfast.checkout_title")}</h2>
 
               <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-foreground block mb-2">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground block">
                     {t("breakfast.date")}
                   </label>
                   <Input
@@ -407,8 +404,8 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
                   />
                 </div>
 
-                <div>
-                  <label className="text-sm font-medium text-foreground block mb-3">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground block">
                     {t("breakfast.payment_method")}
                   </label>
                   <div className="space-y-2">

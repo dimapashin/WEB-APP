@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
 import { sendToTelegram, sendFeedbackRequest } from "@/lib/telegram-service"
 import { useAppStore } from "@/lib/store"
 import { Star, ExternalLink } from "lucide-react"
@@ -16,6 +17,8 @@ const QUESTIONS = [
 
 export function FeedbackSection() {
   const [ratings, setRatings] = useState<Record<string, number>>({})
+  const [comments, setComments] = useState<Record<string, string>>({})
+  const [staffComment, setStaffComment] = useState("")
   const [showExternalLinks, setShowExternalLinks] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const { guest } = useAppStore()
@@ -39,7 +42,15 @@ export function FeedbackSection() {
       return
     }
 
-    const details = QUESTIONS.map((q) => `${q.text}: ${ratings[q.id]}/10`).join("\n")
+    let details = QUESTIONS.map((q) => {
+      let line = `${q.text}: ${ratings[q.id]}/10`
+      if (comments[q.id]) line += `\nКомментарий: ${comments[q.id]}`
+      return line
+    }).join("\n\n")
+    
+    if (staffComment) {
+      details += `\n\nВыделенный сотрудник: ${staffComment}`
+    }
 
     const success = await sendToTelegram({
       type: "feedback",
@@ -47,6 +58,7 @@ export function FeedbackSection() {
       guestName: guest?.name || "Не указан",
       details: `Средняя оценка: ${average.toFixed(1)}/10\n\n${details}`,
       amount: average,
+      telegramId: guest?.telegramId,
     })
 
     if (success) {
@@ -75,36 +87,45 @@ export function FeedbackSection() {
             {QUESTIONS.map((question) => (
               <div key={question.id} className="bg-card rounded-2xl p-4 space-y-3">
                 <p className="font-medium text-foreground">{question.text}</p>
-                <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-1 flex-wrap">
                   {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => (
                     <button
                       key={star}
                       onClick={() => handleRatingChange(question.id, star)}
-                      className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
+                      className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${
                         ratings[question.id] >= star
-                          ? "bg-primary text-primary-foreground scale-110"
+                          ? "bg-primary text-primary-foreground"
                           : "bg-muted text-muted-foreground hover:bg-primary/20"
                       }`}
                     >
-                      <Star className={`w-5 h-5 ${ratings[question.id] >= star ? "fill-current" : ""}`} />
+                      <Star className={`w-4 h-4 ${ratings[question.id] >= star ? "fill-current" : ""}`} />
                     </button>
                   ))}
                 </div>
                 <div className="text-sm text-muted-foreground">
                   {ratings[question.id] ? `${ratings[question.id]}/10` : "Не оценено"}
                 </div>
+                <div className="space-y-2">
+                  <label className="text-sm text-muted-foreground">Комментарий (необязательно)</label>
+                  <Textarea
+                    placeholder="Поделитесь подробностями..."
+                    value={comments[question.id] || ""}
+                    onChange={(e) => setComments((prev) => ({ ...prev, [question.id]: e.target.value }))}
+                    className="bg-background border-border text-foreground min-h-[80px] resize-none"
+                  />
+                </div>
               </div>
             ))}
           </div>
 
-          <div className="bg-card rounded-2xl p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-muted-foreground">Средний балл:</span>
-              <span className="text-2xl font-semibold text-primary">{calculateAverage().toFixed(1)}/10</span>
-            </div>
-            {calculateAverage() >= 5.6 && calculateAverage() > 0 && (
-              <p className="text-sm text-primary mt-2">Спасибо за высокую оценку! 💫</p>
-            )}
+          <div className="bg-card rounded-2xl p-4 space-y-3">
+            <label className="text-sm font-medium text-foreground">Кого из сотрудников вы хотели бы выделить? (необязательно)</label>
+            <Textarea
+              placeholder="Укажите имя сотрудника и чем он вам запомнился..."
+              value={staffComment}
+              onChange={(e) => setStaffComment(e.target.value)}
+              className="bg-background border-border text-foreground min-h-[80px] resize-none"
+            />
           </div>
 
           <Button onClick={handleSubmit} className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90">
@@ -126,8 +147,11 @@ export function FeedbackSection() {
       )}
 
       {showExternalLinks && (
-        <div className="bg-card rounded-2xl p-4 space-y-4">
-          <h3 className="font-semibold text-foreground">Оставьте отзыв на популярных платформах:</h3>
+        <div className="bg-card rounded-2xl p-6 space-y-4 border-2 border-primary/20">
+          <div className="text-center space-y-2">
+            <h3 className="text-lg font-semibold text-foreground">Поделитесь отзывом на популярных платформах!</h3>
+            <p className="text-sm text-muted-foreground">Ваш отзыв поможет другим гостям выбрать наш отель</p>
+          </div>
           <div className="space-y-2">
             <a
               href="https://yandex.ru/maps/org/vidi/110414477756/reviews/?ll=30.386341%2C59.929277&z=16"

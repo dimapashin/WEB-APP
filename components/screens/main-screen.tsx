@@ -36,7 +36,7 @@ export function MainScreen({
 
   return (
     <div className="min-h-screen bg-background app-screen">
-      <div className="px-4 py-6 flex items-center justify-center relative">
+      <div className="px-4 py-6 flex items-end justify-center relative" style={{ paddingTop: 'calc(1.5rem + 0.625rem)' }}>
         <Button
           onClick={() => setLanguage(language === "ru" ? "en" : "ru")}
           variant="outline"
@@ -46,16 +46,16 @@ export function MainScreen({
           <Languages className="w-4 h-4 mr-1" />
           <span className="text-xs">{language === "ru" ? "EN" : "RU"}</span>
         </Button>
-        <img src="/images/vidi-logo-beige.png" alt="VIDI" className="h-10" />
+        <img src="/images/vidi-logo-beige.png" alt="VIDI" className="h-12" />
         <button
           onClick={onLogout}
-          className="absolute right-4 p-2 text-foreground hover:text-primary transition-colors"
+          className="absolute right-4 h-9 p-2 text-foreground hover:text-primary transition-colors flex items-center"
         >
           <LogOut className="w-5 h-5" />
         </button>
       </div>
 
-      <div className="px-4 pb-6 space-y-7 main-screen-content">
+      <div className="px-4 pb-6 space-y-7 main-screen-content" style={{ marginTop: '40px' }}>
         <div className="space-y-2">
           <div className="flex justify-between items-start gap-4">
             <h1 className="text-2xl font-semibold text-foreground">

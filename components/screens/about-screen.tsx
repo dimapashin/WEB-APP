@@ -32,17 +32,17 @@ export function AboutScreen({ onBack }: AboutScreenProps) {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="flex items-center justify-between p-4">
-        <Button onClick={onBack} variant="ghost" className="p-2 h-auto text-foreground hover:text-primary">
-          <ChevronLeft className="w-6 h-6" />
-        </Button>
+      <div className="flex items-center justify-between p-4" style={{ paddingTop: `calc(1.5rem + 5rem)` }}>
+        <button onClick={onBack} className="p-2 -ml-2">
+          <ChevronLeft className="w-6 h-6 text-foreground" />
+        </button>
         <h1 className="text-lg font-semibold text-foreground">{t("about.title")}</h1>
         <div className="w-10" />
       </div>
 
       <div className="px-4 py-2 space-y-6">
         <div className="text-center">
-          <VidiLogo className="w-20 h-auto mx-auto text-primary mb-2" />
+          <VidiLogo className="w-28 h-auto mx-auto text-primary mb-2" />
           <p className="text-muted-foreground text-sm">{t("about.description")}</p>
         </div>
 
@@ -58,7 +58,11 @@ export function AboutScreen({ onBack }: AboutScreenProps) {
                   href="https://yandex.ru/maps/org/vidi/110414477756/?ll=30.386341%2C59.929277&z=16"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-primary text-sm mt-1 block hover:underline"
+                  className="text-primary text-sm mt-1 block hover:underline cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    window.open("https://yandex.ru/maps/org/vidi/110414477756/?ll=30.386341%2C59.929277&z=16", "_blank")
+                  }}
                 >
                   Херсонский пр-д, 6 стр. 1
                 </a>
@@ -73,7 +77,14 @@ export function AboutScreen({ onBack }: AboutScreenProps) {
               </div>
               <div>
                 <h3 className="font-medium text-foreground">{t("about.phone")}</h3>
-                <a href="tel:+78126795772" className="text-primary text-sm mt-1 block hover:underline">
+                <a 
+                  href="tel:+78126795772" 
+                  className="text-primary text-sm mt-1 block hover:underline cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    window.location.href = "tel:+78126795772"
+                  }}
+                >
                   +7 (812) 679-57-72
                 </a>
               </div>
@@ -87,7 +98,14 @@ export function AboutScreen({ onBack }: AboutScreenProps) {
               </div>
               <div>
                 <h3 className="font-medium text-foreground">{t("about.email")}</h3>
-                <a href="mailto:reception@vidi-hotel.ru" className="text-primary text-sm mt-1 block hover:underline">
+                <a 
+                  href="mailto:reception@vidi-hotel.ru" 
+                  className="text-primary text-sm mt-1 block hover:underline cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    window.location.href = "mailto:reception@vidi-hotel.ru"
+                  }}
+                >
                   reception@vidi-hotel.ru
                 </a>
               </div>
@@ -128,10 +146,10 @@ export function AboutScreen({ onBack }: AboutScreenProps) {
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors"
+                className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors"
                 title={link.label}
               >
-                <img src={link.icon} alt={link.label} className="w-8 h-8" />
+                <img src={link.icon} alt={link.label} className="w-10 h-10" />
               </a>
             ))}
           </div>

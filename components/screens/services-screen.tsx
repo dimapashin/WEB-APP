@@ -1,11 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { ArrowLeft, Shirt, Sparkles, ShoppingBag, Brush, Check, AlertCircle } from "lucide-react"
+import { ArrowLeft, Shirt, Sparkles, ShoppingBag, Brush, Check, AlertCircle, CheckSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAppStore } from "@/lib/store"
 import { motion, AnimatePresence } from "framer-motion"
 import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
 import { sendToTelegram } from "@/lib/telegram-service"
 
 interface ServicesScreenProps {
@@ -14,12 +15,24 @@ interface ServicesScreenProps {
 
 type ServiceType = "laundry" | "iron" | "supplies" | "cleaning" | null
 
+const TOTAL_IRONS = 10
+
 export function ServicesScreen({ onBack }: ServicesScreenProps) {
   const [activeService, setActiveService] = useState<ServiceType>(null)
   const [selectedTime, setSelectedTime] = useState("10:00")
+  const [selectedDate, setSelectedDate] = useState("")
+  const [needIron, setNeedIron] = useState(false)
+  const [needBoard, setNeedBoard] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [showUnavailable, setShowUnavailable] = useState(false)
-  const { addOrder, guest } = useAppStore()
+  const { addOrder, guest, orders } = useAppStore()
+
+  // Подсчет активных утюгов (в заказах со статусом pending или confirmed)
+  const activeIrons = orders.filter(
+    (order) => order.type === "iron" && (order.status === "pending" || order.status === "confirmed")
+  ).length
+
+  const canOrderIron = activeIrons < TOTAL_IRONS
 
   const services = [
     { id: "laundry", icon: Shirt, title: "Прачечная", subtitle: "Стирка и химчистка", working: false },
@@ -48,16 +61,26 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
   }
 
   const handleIronSubmit = async () => {
-    const today = new Date()
-    const dateStr = today.toISOString().split("T")[0]
+    if (!selectedDate || !selectedTime) return
+    if (!needIron && !needBoard) {
+      alert("Пожалуйста, выберите утюг или гладильную доску")
+      return
+    }
+    if (needIron && !canOrderIron) {
+      alert(`Все утюги заняты (доступно ${TOTAL_IRONS} штук). Пожалуйста, дождитесь возврата или закажите только гладильную доску.`)
+      return
+    }
 
-    const orderDetails = `Утюг и гладильная доска на ${selectedTime} (доступно с 9:00 до 18:00)`
+    const items = []
+    if (needIron) items.push("утюг")
+    if (needBoard) items.push("гладильная доска")
+    const orderDetails = `${items.join(" и ")} на ${selectedDate} в ${selectedTime}`
 
     addOrder({
       type: "iron",
       details: orderDetails,
       time: selectedTime,
-      date: dateStr,
+      date: selectedDate,
       status: "pending",
     })
 
@@ -68,8 +91,9 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
         roomNumber: guest.roomNumber,
         guestName: guest.name,
         details: orderDetails,
-        date: dateStr,
+        date: selectedDate,
         time: selectedTime,
+        telegramId: guest.telegramId,
       })
     }
 
@@ -77,7 +101,41 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
     setTimeout(() => {
       setShowSuccess(false)
       setActiveService(null)
+      setSelectedDate("")
+      setSelectedTime("10:00")
+      setNeedIron(false)
+      setNeedBoard(false)
     }, 2000)
+  }
+
+  const handleReturnIron = async () => {
+    // Найти последний заказ утюга этого гостя
+    const ironOrders = orders
+      .filter((order) => order.type === "iron" && order.status !== "completed")
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+
+    if (ironOrders.length === 0) {
+      alert("У вас нет активных заказов утюга")
+      return
+    }
+
+    // Помечаем как выполненный
+    const orderToComplete = ironOrders[0]
+    // TODO: Обновить статус заказа в store (нужно добавить updateOrderStatus)
+    
+    if (guest) {
+      await sendToTelegram({
+        type: "iron",
+        roomNumber: guest.roomNumber,
+        guestName: guest.name,
+        details: `Возврат утюга (заказ от ${orderToComplete.date} в ${orderToComplete.time})`,
+        date: orderToComplete.date,
+        time: orderToComplete.time,
+        telegramId: guest.telegramId,
+      })
+    }
+    
+    alert("Утюг возвращен! Спасибо.")
   }
 
   if (showSuccess) {
@@ -97,7 +155,7 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
   if (activeService === "iron") {
     return (
       <div className="min-h-screen bg-background flex flex-col app-screen">
-        <div className="flex items-center justify-between p-4">
+        <div className="flex items-center justify-between p-4" style={{ paddingTop: `calc(1.5rem + 5rem)` }}>
           <button onClick={() => setActiveService(null)} className="p-2 -ml-2">
             <ArrowLeft className="w-6 h-6 text-foreground" />
           </button>
@@ -106,25 +164,71 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
         </div>
         <div className="flex-1 px-4 py-6 space-y-4 overflow-y-auto">
           <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">Дата</label>
+            <Input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="bg-card border-border text-foreground h-12 w-full"
+            />
+          </div>
+          <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Время доставки</label>
-            <p className="text-sm text-primary mb-4">Доступно: 09:00 – 18:00</p>
+            <p className="text-sm text-primary">Доступно: 09:00 – 18:00</p>
             <Input
               type="time"
               value={selectedTime}
               onChange={(e) => setSelectedTime(e.target.value)}
               min="09:00"
               max="18:00"
-              className="bg-card border-border text-foreground h-12"
+              className="bg-card border-border text-foreground h-12 w-full"
             />
           </div>
+
+          <div className="space-y-3 pt-2">
+            <label className="text-sm font-medium text-foreground block">Что вам нужно?</label>
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id="need-iron"
+                checked={needIron}
+                onCheckedChange={(checked) => setNeedIron(checked as boolean)}
+                className="mt-1 border-muted-foreground data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                disabled={!canOrderIron && !needIron}
+              />
+              <label htmlFor="need-iron" className="text-sm text-foreground leading-tight flex-1">
+                Утюг {!canOrderIron && !needIron && <span className="text-destructive">(все заняты, доступно {TOTAL_IRONS} штук)</span>}
+              </label>
+            </div>
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id="need-board"
+                checked={needBoard}
+                onCheckedChange={(checked) => setNeedBoard(checked as boolean)}
+                className="mt-1 border-muted-foreground data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+              />
+              <label htmlFor="need-board" className="text-sm text-foreground leading-tight flex-1">
+                Гладильная доска
+              </label>
+            </div>
+          </div>
         </div>
-        <div className="p-4">
+        <div className="p-4 space-y-3">
           <Button
             onClick={handleIronSubmit}
-            className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90"
+            disabled={!selectedDate || !selectedTime || (!needIron && !needBoard)}
+            className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
-            Заказать на {selectedTime}
+            Заказать {needIron && needBoard ? "утюг и доску" : needIron ? "утюг" : "гладильную доску"}
           </Button>
+          {orders.some((order) => order.type === "iron" && order.status !== "completed") && (
+            <Button
+              onClick={handleReturnIron}
+              variant="outline"
+              className="w-full h-12 border-primary text-primary hover:bg-primary/10"
+            >
+              Вернуть утюг
+            </Button>
+          )}
         </div>
       </div>
     )
@@ -133,7 +237,7 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
   if (activeService === "supplies") {
     return (
       <div className="min-h-screen bg-background flex flex-col app-screen">
-        <div className="flex items-center justify-between p-4">
+        <div className="flex items-center justify-between p-4" style={{ paddingTop: `calc(1.5rem + 5rem)` }}>
           <button onClick={() => setActiveService(null)} className="p-2 -ml-2">
             <ArrowLeft className="w-6 h-6 text-foreground" />
           </button>

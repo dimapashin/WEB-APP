@@ -30,7 +30,7 @@ export function InformationScreen({ onBack }: InformationScreenProps) {
   if (activeCard && selectedCard) {
     return (
       <div className="min-h-screen bg-background flex flex-col app-screen">
-        <div className="flex items-center justify-between p-4">
+        <div className="flex items-center justify-between p-4" style={{ paddingTop: `calc(1.5rem + 5rem)` }}>
           <button onClick={() => setActiveCard(null)} className="p-2 -ml-2">
             <ChevronLeft className="w-6 h-6 text-foreground" />
           </button>
@@ -46,10 +46,10 @@ export function InformationScreen({ onBack }: InformationScreenProps) {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="flex items-center justify-between p-4">
-        <Button onClick={onBack} variant="ghost" className="p-2 h-auto text-foreground hover:text-primary">
-          <ChevronLeft className="w-6 h-6" />
-        </Button>
+      <div className="flex items-center justify-between p-4" style={{ paddingTop: `calc(1.5rem + 5rem)` }}>
+        <button onClick={onBack} className="p-2 -ml-2">
+          <ChevronLeft className="w-6 h-6 text-foreground" />
+        </button>
         <h1 className="text-lg font-semibold text-foreground">{t("information.title")}</h1>
         <div className="w-10" />
       </div>

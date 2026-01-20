@@ -1,6 +1,12 @@
 const BOT_TOKEN = "8594370320:AAG-BYVZXyzxn_U3Ie5Jv6w_H7JltfFTYEk"
 const RECEPTION_CHAT_ID = "-1003540162741"
 
+// ID тем (forum topics) в рабочей группе
+const THREAD_RECEPTION = 454   // 🛎 Заявки (УТЮГ, Wi-Fi, Завтраки)
+const THREAD_TAXI = 452        // 🚕 Такси
+const THREAD_WAKEUP = 450      // ⏰ Будильники
+const THREAD_REVIEWS = 447     // ⭐️ Отзывы
+
 export interface NotificationData {
   type: string
   roomNumber: string
@@ -10,6 +16,9 @@ export interface NotificationData {
   time?: string
   amount?: number
   paymentMethod?: string
+  telegramId?: string
+  messageThreadId?: number
+  replyToMessageId?: number
 }
 
 export async function sendToTelegram(orderData: NotificationData): Promise<boolean> {
@@ -26,36 +35,64 @@ export async function sendToTelegram(orderData: NotificationData): Promise<boole
 
   const typeLabel = typeLabels[orderData.type] || orderData.type
 
-  let message = `🛎️ *НОВЫЙ ЗАКАЗ ОТ ГОСТЯ*\n`
-  message += `──────────────\n`
-  message += `• *Услуга:* ${typeLabel}\n`
-  message += `• *Номер комнаты:* ${orderData.roomNumber}\n`
-  message += `• *Имя гостя:* ${orderData.guestName}\n`
-  message += `• *Детали:* ${orderData.details}\n`
-  if (orderData.amount) {
-    message += `• *Сумма:* ${orderData.amount} ₽\n`
+  // Определяем тему для разных типов заявок
+  let messageThreadId: number | undefined
+  if (orderData.type === "taxi") {
+    messageThreadId = THREAD_TAXI
+  } else if (orderData.type === "wakeup") {
+    messageThreadId = THREAD_WAKEUP
+  } else if (orderData.type === "feedback") {
+    messageThreadId = THREAD_REVIEWS
+  } else {
+    messageThreadId = THREAD_RECEPTION
   }
-  if (orderData.date) {
-    message += `• *Дата:* ${orderData.date}\n`
+
+  // Если указан messageThreadId в данных, используем его (для ответов)
+  if (orderData.messageThreadId !== undefined) {
+    messageThreadId = orderData.messageThreadId
   }
-  if (orderData.time) {
-    message += `• *Время:* ${orderData.time}\n`
-  }
+
+  // Формируем кликабельное имя гостя (если есть telegramId)
+  const guestNameLink = orderData.telegramId 
+    ? `[${orderData.guestName}](tg://user?id=${orderData.telegramId})`
+    : orderData.guestName
+
+  // Компактный формат сообщения
+  let message = `${typeLabel}\n`
+  message += `━━━━━━━━━━━━━━\n`
+  message += `👤 Гость: ${guestNameLink}\n`
+  message += `🏠 Номер: ${orderData.roomNumber}\n`
+  message += `📝 ${orderData.details}\n`
+  
+  if (orderData.date) message += `📅 ${orderData.date}`
+  if (orderData.time) message += orderData.date ? ` в ${orderData.time}\n` : `⏰ ${orderData.time}\n`
+  if (orderData.amount) message += `💰 ${orderData.amount} ₽\n`
   if (orderData.paymentMethod) {
-    message += `• *Оплата:* ${orderData.paymentMethod === "card" ? "Банковская карта" : "СБП"}\n`
+    message += `💳 ${orderData.paymentMethod === "card" ? "Банковская карта" : "СБП"}\n`
   }
-  message += `• *Время:* ${new Date().toLocaleString("ru-RU")}\n`
-  message += `──────────────`
+  message += `\n🕐 ${new Date().toLocaleString("ru-RU", { hour: "2-digit", minute: "2-digit" })}`
 
   try {
+    const payload: any = {
+      chat_id: RECEPTION_CHAT_ID,
+      text: message,
+      parse_mode: "Markdown",
+    }
+
+    // Добавляем тему, если указана
+    if (messageThreadId !== undefined) {
+      payload.message_thread_id = messageThreadId
+    }
+
+    // Если это ответ на сообщение (для отмены будильника)
+    if (orderData.replyToMessageId !== undefined) {
+      payload.reply_to_message_id = orderData.replyToMessageId
+    }
+
     const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: RECEPTION_CHAT_ID,
-        text: message,
-        parse_mode: "Markdown",
-      }),
+      body: JSON.stringify(payload),
     })
 
     const result = await response.json()

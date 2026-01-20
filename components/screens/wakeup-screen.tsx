@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ArrowLeft, Check, Plus, Trash2 } from "lucide-react"
+import { ArrowLeft, Check, Plus, Trash2, AlarmClock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useAppStore } from "@/lib/store"
@@ -17,7 +17,7 @@ export function WakeupScreen({ onBack }: WakeupScreenProps) {
   const [selectedTime, setSelectedTime] = useState("08:00")
   const [comment, setComment] = useState("")
   const [orderSuccess, setOrderSuccess] = useState(false)
-  const { addAlarm, removeAlarm, addOrder, guest, alarms } = useAppStore()
+  const { addAlarm, removeAlarm, guest, alarms } = useAppStore()
 
   const handleSubmit = async () => {
     if (!selectedDate) return
@@ -30,14 +30,7 @@ export function WakeupScreen({ onBack }: WakeupScreenProps) {
 
     const orderDetails = `Будильник на ${selectedDate} в ${selectedTime}${comment ? `. Комментарий: ${comment}` : ""}`
 
-    addOrder({
-      type: "wakeup",
-      details: orderDetails,
-      time: selectedTime,
-      date: selectedDate,
-      status: "confirmed",
-    })
-
+    // НЕ добавляем в заявки - будильник только в этом разделе
     // Send to Telegram
     if (guest) {
       await sendToTelegram({
@@ -47,6 +40,7 @@ export function WakeupScreen({ onBack }: WakeupScreenProps) {
         details: orderDetails,
         date: selectedDate,
         time: selectedTime,
+        telegramId: guest.telegramId,
       })
     }
 
@@ -64,7 +58,8 @@ export function WakeupScreen({ onBack }: WakeupScreenProps) {
     const alarmToCancel = alarms.find(alarm => alarm.id === alarmId);
     
     if (alarmToCancel && guest) {
-      // Send cancellation notification to Telegram
+      // Send cancellation notification to Telegram (ответ на исходную заявку)
+      // TODO: Нужно хранить message_id исходной заявки для reply
       await sendToTelegram({
         type: "wakeup",
         roomNumber: guest.roomNumber,
@@ -72,6 +67,8 @@ export function WakeupScreen({ onBack }: WakeupScreenProps) {
         details: `Отмена будильника на ${alarmToCancel.date} в ${alarmToCancel.time}${alarmToCancel.comment ? `. Комментарий: ${alarmToCancel.comment}` : ""}`,
         date: alarmToCancel.date,
         time: alarmToCancel.time,
+        telegramId: guest.telegramId,
+        // replyToMessageId: alarmToCancel.telegramMessageId // Нужно добавить в Alarm интерфейс
       });
     }
     
@@ -97,7 +94,7 @@ export function WakeupScreen({ onBack }: WakeupScreenProps) {
 
   return (
     <div className="min-h-screen bg-background flex flex-col app-screen">
-      <div className="flex items-center justify-between p-4">
+      <div className="flex items-center justify-between p-4" style={{ paddingTop: `calc(1.5rem + 5rem)` }}>
         <button onClick={onBack} className="p-2 -ml-2">
           <ArrowLeft className="w-6 h-6 text-foreground" />
         </button>
@@ -109,23 +106,44 @@ export function WakeupScreen({ onBack }: WakeupScreenProps) {
         {alarms.length > 0 ? (
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Установленные будильники</label>
-            <div className="space-y-2">
-              {alarms.map((alarm) => (
-                <div key={alarm.id} className="bg-card rounded-xl p-4 flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-foreground">
-                      {alarm.date} в {alarm.time}
-                    </p>
-                    {alarm.comment && <p className="text-sm text-muted-foreground">{alarm.comment}</p>}
+            <div className="space-y-3">
+              {alarms.map((alarm) => {
+                const date = new Date(alarm.createdAt)
+                const formattedDate = date.toLocaleDateString("ru-RU", {
+                  day: "numeric",
+                  month: "short",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+
+                return (
+                  <div key={alarm.id} className="bg-card rounded-2xl p-4">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                        <AlarmClock className="w-6 h-6 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <h3 className="font-medium text-foreground truncate">
+                            {alarm.date} в {alarm.time}
+                          </h3>
+                          <span className="px-2 py-1 rounded-full text-xs whitespace-nowrap bg-primary/20 text-primary">
+                            Подтверждён
+                          </span>
+                        </div>
+                        {alarm.comment && <p className="text-sm text-muted-foreground mt-1">{alarm.comment}</p>}
+                        <p className="text-sm text-muted-foreground mt-1">{formattedDate}</p>
+                      </div>
+                      <button
+                        onClick={() => handleCancelAlarm(alarm.id)}
+                        className="p-2 hover:bg-muted rounded-lg transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4 text-muted-foreground" />
+                      </button>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => handleCancelAlarm(alarm.id)}
-                    className="p-2 hover:bg-muted rounded-lg transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4 text-muted-foreground" />
-                  </button>
-                </div>
-              ))}
+                )
+              })}
             </div>
 
             <Button
