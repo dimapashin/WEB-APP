@@ -25,7 +25,6 @@ const orderIcons: Record<string, React.ElementType> = {
   breakfast: UtensilsCrossed,
   taxi: Car,
   wakeup: AlarmClock,
-  iron: Shirt,
 }
 
 const statusLabels: Record<string, string> = {
