@@ -86,7 +86,7 @@ export function InformationScreen({ onBack }: InformationScreenProps) {
           {/* CONTENT */}
           <motion.div
             {...fadeInUp(0.1)}
-            className="flex-1 overflow-y-auto px-4 pb-[env(safe-area-inset-bottom)]"
+            className="flex-1 overflow-y-auto px-4 pt-2 pb-[env(safe-area-inset-bottom)]"
           >
             {selectedCard.component}
           </motion.div>
@@ -118,8 +118,8 @@ export function InformationScreen({ onBack }: InformationScreenProps) {
         <div className="w-10" />
       </div>
 
-      {/* CARDS */}
-      <div className="px-4 pb-[env(safe-area-inset-bottom)] space-y-4">
+      {/* CONTENT */}
+      <div className="flex-1 overflow-y-auto px-4 pt-2 pb-[env(safe-area-inset-bottom)] space-y-4">
         {INFORMATION_CARDS.map((card, index) => {
           const isFeedback = card.id === "feedback"
 
@@ -144,12 +144,7 @@ export function InformationScreen({ onBack }: InformationScreenProps) {
                   ${isFeedback ? "bg-primary/20" : "bg-primary/10"}
                 `}
               >
-                <card.icon
-                  className={`
-                    w-6 h-6
-                    ${isFeedback ? "text-primary" : "text-primary"}
-                  `}
-                />
+                <card.icon className="w-6 h-6 text-primary" />
               </div>
 
               <div className="text-left flex-1">
