@@ -1,10 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { ArrowLeft, Shirt, Sparkles, ShoppingBag, Brush, Check, AlertCircle, CheckSquare } from "lucide-react"
+import { ArrowLeft, Shirt, Sparkles, ShoppingBag, Brush, Check, AlertCircle, CheckSquare, Iron } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAppStore } from "@/lib/store"
-import { motion, AnimatePresence } from "framer-motion"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { sendToTelegram } from "@/lib/telegram-service"
@@ -141,28 +140,20 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
   if (showSuccess) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-center">
+        <div className="text-center">
           <div className="w-24 h-24 rounded-full bg-[#4CAF50] flex items-center justify-center mx-auto mb-4">
             <Check className="w-12 h-12 text-white" />
           </div>
           <h2 className="text-xl font-semibold text-foreground">Заказ оформлен!</h2>
           <p className="text-muted-foreground mt-2">Доставим в номер {guest?.roomNumber}</p>
-        </motion.div>
+        </div>
       </div>
     )
   }
 
   if (activeService === "iron") {
     return (
-      <AnimatePresence mode="wait">
-        <motion.div
-          key="iron"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-          className="min-h-screen bg-background flex flex-col app-screen"
-        >
+      <div className="min-h-screen bg-background flex flex-col app-screen">
         <div className="flex items-center justify-between p-4" style={{ paddingTop: `calc(1.5rem + 5rem)` }}>
           <button onClick={() => setActiveService(null)} className="p-2 -ml-2">
             <ArrowLeft className="w-6 h-6 text-foreground" />
@@ -170,7 +161,7 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
           <h1 className="text-lg font-semibold text-foreground">Заказ утюга</h1>
           <div className="w-10" />
         </div>
-        <div className="flex-1 px-4 py-6 space-y-4 overflow-y-auto">
+        <div className="flex-1 px-4 py-2 space-y-4 overflow-y-auto">
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Дата</label>
             <Input
@@ -203,8 +194,9 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
                 className="mt-1 border-muted-foreground data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                 disabled={!canOrderIron && !needIron}
               />
-              <label htmlFor="need-iron" className="text-sm text-foreground leading-tight flex-1">
-                Утюг {!canOrderIron && !needIron && <span className="text-destructive">(все заняты, доступно {TOTAL_IRONS} штук)</span>}
+              <label htmlFor="need-iron" className="text-base font-medium text-foreground leading-tight flex-1 flex items-center gap-2">
+                <Iron className="w-5 h-5 text-primary" />
+                Утюг {!canOrderIron && !needIron && <span className="text-destructive text-sm font-normal">(все заняты, доступно {TOTAL_IRONS} штук)</span>}
               </label>
             </div>
             <div className="flex items-start gap-3">
@@ -214,7 +206,8 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
                 onCheckedChange={(checked) => setNeedBoard(checked as boolean)}
                 className="mt-1 border-muted-foreground data-[state=checked]:bg-primary data-[state=checked]:border-primary"
               />
-              <label htmlFor="need-board" className="text-sm text-foreground leading-tight flex-1">
+              <label htmlFor="need-board" className="text-base font-medium text-foreground leading-tight flex-1 flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-primary" />
                 Гладильная доска
               </label>
             </div>
@@ -238,22 +231,13 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
             </Button>
           )}
         </div>
-        </motion.div>
-      </AnimatePresence>
+      </div>
     )
   }
 
   if (activeService === "supplies") {
     return (
-      <AnimatePresence mode="wait">
-        <motion.div
-          key="supplies"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-          className="min-h-screen bg-background flex flex-col app-screen"
-        >
+      <div className="min-h-screen bg-background flex flex-col app-screen">
         <div className="flex items-center justify-between p-4" style={{ paddingTop: `calc(1.5rem + 5rem)` }}>
           <button onClick={() => setActiveService(null)} className="p-2 -ml-2">
             <ArrowLeft className="w-6 h-6 text-foreground" />
@@ -261,7 +245,7 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
           <h1 className="text-lg font-semibold text-foreground">Расходники</h1>
           <div className="w-10" />
         </div>
-        <div className="flex-1 px-4 py-6">
+        <div className="flex-1 px-4 py-2">
           <div className="grid grid-cols-2 gap-4">
             {[
               { name: "Зубная щётка", price: 150 },
@@ -282,8 +266,7 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
             ))}
           </div>
         </div>
-        </motion.div>
-      </AnimatePresence>
+      </div>
     )
   }
 
@@ -298,14 +281,11 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
       </div>
 
       <div className="px-4 py-2 space-y-3">
-        {services.map((service, index) => (
-          <motion.button
+        {services.map((service) => (
+          <button
             key={service.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.05 }}
             onClick={() => handleServiceClick(service.id, service.working)}
-            className="w-full bg-card rounded-2xl p-4 flex items-center gap-4 transition-scale active:scale-[0.98] hover:bg-card/80"
+            className="w-full bg-card rounded-2xl p-4 flex items-center gap-4 transition-scale active:scale-[0.98]"
           >
             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
               <service.icon className="w-6 h-6 text-primary" />
@@ -317,24 +297,17 @@ export function ServicesScreen({ onBack }: ServicesScreenProps) {
             {!service.working && (
               <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">Скоро</span>
             )}
-          </motion.button>
+          </button>
         ))}
       </div>
 
       {/* Unavailable Toast */}
-      <AnimatePresence>
-        {showUnavailable && (
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-6 left-4 right-4 bg-card border border-border rounded-2xl p-4 flex items-center gap-3"
-          >
-            <AlertCircle className="w-5 h-5 text-muted-foreground" />
-            <span className="text-foreground">Услуга временно недоступна</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {showUnavailable && (
+        <div className="fixed bottom-6 left-4 right-4 bg-card border border-border rounded-2xl p-4 flex items-center gap-3 z-50">
+          <AlertCircle className="w-5 h-5 text-muted-foreground" />
+          <span className="text-foreground">Услуга временно недоступна</span>
+        </div>
+      )}
     </div>
   )
 }

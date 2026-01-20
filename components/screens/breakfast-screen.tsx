@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useT } from "@/lib/i18n"
 import { sendToTelegram } from "@/lib/telegram-service"
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Pagination, Navigation } from 'swiper/modules';
+import { Pagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
@@ -169,32 +169,24 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
       {/* Carousel */}
       <div className="relative w-full overflow-hidden">
         <Swiper
-          modules={[Pagination, Navigation]}
+          modules={[Pagination]}
           spaceBetween={0}
           slidesPerView={1}
           loop={false}
           noSwiping={false}
           centeredSlides={true}
           pagination={{ clickable: true }}
-          navigation={{
-            nextEl: '.swiper-button-next',
-            prevEl: '.swiper-button-prev',
-          }}
           onSlideChange={(swiper) => setSelectedIndex(swiper.activeIndex)}
           className="mySwiper"
         >
-          {breakfastComplexes.map((complex, index) => (
+                  {breakfastComplexes.map((complex, index) => (
             <SwiperSlide key={complex.id}>
               <div className="flex justify-center py-4 px-4">
-                <motion.img
+                <img
                   key={complex.id}
                   src={complex.image}
                   alt={complex.name}
                   className="w-full max-w-sm aspect-[4/3] rounded-2xl object-cover shadow-2xl border border-border/50"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
                   draggable={false}
                   onError={(e) => {
                     const target = e.target as HTMLImageElement
@@ -216,17 +208,9 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
       </div>
 
       {/* Content + Add to Cart */}
-      <div className="flex-1 px-4 pb-4">
+      <div className="flex-1 px-4 py-2 pb-4">
         {selectedItem && (
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={selectedItem.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
-              className="space-y-4"
-            >
+          <div className="space-y-4">
               <div className="space-y-3">
                 <div>
                   <h2 className="text-2xl font-bold text-foreground mb-2">{selectedItem.name}</h2>
@@ -273,8 +257,7 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
                   )}
                 </div>
               </div>
-            </motion.div>
-          </AnimatePresence>
+            </div>
         )}
       </div>
 
@@ -312,11 +295,8 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
               <h2 className="text-xl font-semibold text-foreground mb-4">{t("breakfast.cart")}</h2>
               <div className="space-y-4">
                 {cart.map((item) => (
-                  <motion.div
+                  <div
                     key={item.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
                     className="flex items-center gap-4 bg-background/50 rounded-xl p-3 border border-border/50"
                   >
                     <img
@@ -343,7 +323,7 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
                         <Plus className="w-4 h-4 text-primary-foreground" />
                       </button>
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
               <div className="mt-6 pt-4 border-t border-border">

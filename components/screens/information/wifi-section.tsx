@@ -41,7 +41,7 @@ export function WifiSection() {
   }
 
   return (
-    <div className="px-4 py-6 space-y-6">
+    <div className="px-4 py-2 space-y-6">
       <div className="space-y-2">
         <h2 className="text-xl font-semibold text-foreground">Бесплатный Wi-Fi "VIDI"</h2>
         <p className="text-sm text-muted-foreground">Подключитесь к нашей сети для быстрого интернета</p>

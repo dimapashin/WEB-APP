@@ -96,7 +96,7 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
         <Languages className="w-4 h-4 mr-1" />
         <span className="text-xs">{language === "ru" ? "EN" : "RU"}</span>
       </Button>
-      <div className="w-full max-w-sm mx-auto space-y-8 mt-16" style={{ maxWidth: '100%' }}>
+      <div className="w-full max-w-sm mx-auto space-y-8 mt-8" style={{ maxWidth: '100%' }}>
         <div className="text-center">
           <img src="/images/vidi-logo-beige.png" alt="VIDI" className="h-10 mx-auto mb-4" />
           <p className="text-muted-foreground">{t("welcome")}</p>
@@ -174,7 +174,7 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
               exit={{ scale: 0.9, opacity: 0 }}
               className="bg-card/95 backdrop-blur-sm rounded-2xl p-6 max-w-sm w-full space-y-4 border border-border mx-auto"
               onClick={(e) => e.stopPropagation()}
-              style={{ maxWidth: 'calc(100% - 2rem)' }}
+              style={{ maxWidth: 'calc(100vw - 3rem)' }}
             >
               <h2 className="text-lg font-semibold text-foreground text-center">Уточнение дат</h2>
               <form onSubmit={handleDatesSubmit} className="space-y-4">
