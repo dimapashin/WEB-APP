@@ -31,21 +31,18 @@ export function AboutScreen({ onBack }: AboutScreenProps) {
   ]
 
   return (
-    <div className="min-h-screen bg-background app-screen">
-      <div className="px-4 py-4 flex items-center gap-3">
-        <Button
-          onClick={onBack}
-          variant="ghost"
-          className="p-2 h-auto text-foreground hover:text-primary"
-        >
+    <div className="min-h-screen bg-background">
+      <div className="flex items-center justify-between p-4">
+        <Button onClick={onBack} variant="ghost" className="p-2 h-auto text-foreground hover:text-primary">
           <ChevronLeft className="w-6 h-6" />
         </Button>
-        <h1 className="text-2xl font-semibold text-foreground">{t("about.title")}</h1>
+        <h1 className="text-lg font-semibold text-foreground">{t("about.title")}</h1>
+        <div className="w-10" />
       </div>
 
-      <div className="px-4 pb-8 space-y-6">
+      <div className="px-4 py-2 space-y-6">
         <div className="text-center">
-          <VidiLogo className="w-16 h-auto mx-auto text-primary mb-2" />
+          <VidiLogo className="w-20 h-auto mx-auto text-primary mb-2" />
           <p className="text-muted-foreground text-sm">{t("about.description")}</p>
         </div>
 
@@ -98,6 +95,29 @@ export function AboutScreen({ onBack }: AboutScreenProps) {
           </div>
         </div>
 
+        {/* Additional info */}
+        <div className="bg-card rounded-2xl p-4 space-y-3">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <Phone className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-medium text-foreground">Ресепшен</h3>
+              <p className="text-sm text-muted-foreground">Круглосуточно</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <MapPin className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-medium text-foreground">Завтрак</h3>
+              <p className="text-sm text-muted-foreground">Ежедневно с 7:00 до 11:00</p>
+            </div>
+          </div>
+        </div>
+
         {/* Social Links */}
         <div className="space-y-4">
           <h3 className="text-sm font-medium text-foreground px-2">{t("about.follow_us")}</h3>
@@ -111,7 +131,7 @@ export function AboutScreen({ onBack }: AboutScreenProps) {
                 className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors"
                 title={link.label}
               >
-                <img src={link.icon} alt={link.label} className="w-6 h-6" />
+                <img src={link.icon} alt={link.label} className="w-8 h-8" />
               </a>
             ))}
           </div>

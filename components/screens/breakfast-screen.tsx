@@ -10,6 +10,11 @@ import { BreakfastDetailsModal } from "@/components/breakfast-details-modal"
 import { motion, AnimatePresence } from "framer-motion"
 import { useT } from "@/lib/i18n"
 import { sendToTelegram } from "@/lib/telegram-service"
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Pagination, Navigation } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
 
 interface BreakfastScreenProps {
   onBack: () => void
@@ -69,7 +74,6 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
   const [paymentMethod, setPaymentMethod] = useState<"card" | "sbp" | null>(null)
   const [orderSuccess, setOrderSuccess] = useState(false)
   const [isScrolling, setIsScrolling] = useState(false)
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
   const t = useT()
 
   // из useAppStore берем только то, что используется
@@ -79,78 +83,6 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
   const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0)
   const cartItem = selectedItem ? cart.find((item) => item.id === selectedItem.id) : undefined
-
-  // Initialize infinite scroll on mount
-  useEffect(() => {
-    const container = scrollContainerRef.current
-    if (!container) return
-
-    const itemCount = breakfastComplexes.length
-    const cardWidth = container.clientWidth
-
-    // Initialize infinite scroll: start at middle position (after first set of items)
-    // Use setTimeout to ensure container is fully rendered
-    setTimeout(() => {
-      if (container.scrollLeft === 0 || container.scrollLeft < cardWidth * itemCount) {
-        container.scrollLeft = cardWidth * itemCount
-      }
-    }, 100)
-  }, [])
-
-  // Handle scroll to update selected index with infinite loop
-  useEffect(() => {
-    const container = scrollContainerRef.current
-    if (!container) return
-
-    const itemCount = breakfastComplexes.length
-    const cardWidth = container.clientWidth
-
-    const handleScroll = () => {
-      setIsScrolling(true)
-      const scrollLeft = container.scrollLeft
-      const totalWidth = container.scrollWidth
-
-      // Calculate current index based on scroll position
-      let newIndex = Math.round(scrollLeft / cardWidth) % itemCount
-      if (newIndex < 0) newIndex = itemCount + newIndex
-
-      // Infinite scroll: reset position when reaching boundaries
-      if (scrollLeft >= totalWidth - cardWidth * 1.5) {
-        // Near the end, jump to middle section
-        container.scrollTo({ left: cardWidth * itemCount, behavior: "auto" })
-      } else if (scrollLeft <= cardWidth * 0.5) {
-        // Near the beginning, jump to middle section
-        container.scrollTo({ left: cardWidth * itemCount, behavior: "auto" })
-      }
-
-      if (newIndex !== selectedIndex && newIndex >= 0 && newIndex < itemCount) {
-        setSelectedIndex(newIndex)
-      }
-
-      setTimeout(() => setIsScrolling(false), 150)
-    }
-
-    container.addEventListener("scroll", handleScroll, { passive: true })
-
-    return () => container.removeEventListener("scroll", handleScroll)
-  }, [selectedIndex])
-
-  // Scroll to selected index (for dots navigation)
-  const scrollToIndex = (index: number) => {
-    const container = scrollContainerRef.current
-    if (!container) return
-
-    const cardWidth = container.clientWidth
-    const itemCount = breakfastComplexes.length
-    // Scroll to middle section + index for infinite scroll
-    const targetScroll = cardWidth * itemCount + index * cardWidth
-    
-    container.scrollTo({
-      left: targetScroll,
-      behavior: "smooth",
-    })
-    setSelectedIndex(index)
-  }
 
   const handleAddToCart = () => {
     if (!selectedItem) return
@@ -166,6 +98,18 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
   const handleCheckoutSubmit = async () => {
     if (!checkoutDate || !paymentMethod) return
 
+    // Check if guest is staying in the hotel on the selected date
+    if (guest?.checkInDate && guest?.checkoutDate) {
+      const selectedDate = new Date(checkoutDate);
+      const checkInDate = new Date(guest.checkInDate);
+      const checkOutDate = new Date(guest.checkoutDate);
+
+      if (selectedDate < checkInDate || selectedDate > checkOutDate) {
+        alert(t("breakfast.date_error") || "Вы не проживаете в отеле в эти даты");
+        return;
+      }
+    }
+
     const cartItems = cart.map((item) => `${item.name} x${item.quantity}`).join(", ")
 
     // Send to Telegram
@@ -174,7 +118,7 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
         type: "breakfast",
         roomNumber: guest.roomNumber,
         guestName: guest.name,
-        details: `Завтраки: ${cartItems}. Дата доставки: ${checkoutDate}`,
+        details: `Завтраки: ${cartItems}. Дата: ${checkoutDate}`,
         date: checkoutDate,
         amount: cartTotal,
         paymentMethod: paymentMethod,
@@ -186,71 +130,6 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
     clearCart()
     setShowCheckout(false)
     setShowCart(false)
-  }
-
-  const handlePrev = () => {
-    const container = scrollContainerRef.current
-    if (!container) return
-
-    const cardWidth = container.clientWidth
-    const currentScroll = container.scrollLeft
-    const newScroll = currentScroll - cardWidth
-
-    // If we're at the beginning, jump to end section
-    if (newScroll < cardWidth * 0.5) {
-      const itemCount = breakfastComplexes.length
-      container.scrollTo({
-        left: cardWidth * itemCount * 2 - cardWidth,
-        behavior: "auto",
-      })
-      // Then scroll smoothly
-      setTimeout(() => {
-        container.scrollTo({
-          left: cardWidth * itemCount * 2 - cardWidth * 2,
-          behavior: "smooth",
-        })
-      }, 50)
-    } else {
-      container.scrollTo({
-        left: newScroll,
-        behavior: "smooth",
-      })
-    }
-  }
-
-  const handleNext = () => {
-    const container = scrollContainerRef.current
-    if (!container) return
-
-    const cardWidth = container.clientWidth
-    const currentScroll = container.scrollLeft
-    const totalWidth = container.scrollWidth
-    const newScroll = currentScroll + cardWidth
-
-    // If we're at the end, jump to beginning section
-    if (newScroll >= totalWidth - cardWidth * 0.5) {
-      const itemCount = breakfastComplexes.length
-      container.scrollTo({
-        left: cardWidth * itemCount,
-        behavior: "auto",
-      })
-      // Then scroll smoothly
-      setTimeout(() => {
-        container.scrollTo({
-          left: cardWidth * itemCount + cardWidth,
-          behavior: "smooth",
-        })
-      }, 50)
-    } else {
-      container.scrollTo({
-        left: newScroll,
-        behavior: "smooth",
-      })
-    }
-  }
-
-  const handleDotClick = (index: number) => {
-    scrollToIndex(index)
   }
 
   if (orderSuccess) {
@@ -292,20 +171,24 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
 
       {/* Carousel */}
       <div className="relative w-full overflow-hidden">
-        <div
-          ref={scrollContainerRef}
-          className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
-          style={{
-            scrollBehavior: "smooth",
-            WebkitOverflowScrolling: "touch",
-            scrollbarWidth: "none",
-            msOverflowStyle: "none",
+        <Swiper
+          modules={[Pagination, Navigation]}
+          spaceBetween={0}
+          slidesPerView={1}
+          loop={true}
+          noSwiping={false}
+          centeredSlides={true}
+          pagination={{ clickable: true }}
+          navigation={{
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
           }}
+          onSlideChange={(swiper) => setSelectedIndex(swiper.realIndex)}
+          className="mySwiper"
         >
-          {/* Duplicate items for infinite scroll */}
-          {[...breakfastComplexes, ...breakfastComplexes, ...breakfastComplexes].map((complex, index) => (
-            <div key={`${complex.id}-${index}`} className="w-full flex-shrink-0 snap-center px-4">
-              <div className="flex justify-center py-4">
+          {breakfastComplexes.map((complex, index) => (
+            <SwiperSlide key={complex.id}>
+              <div className="flex justify-center py-4 px-4">
                 <motion.img
                   src={complex.image}
                   alt={complex.name}
@@ -320,47 +203,17 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
                   }}
                 />
               </div>
-            </div>
+            </SwiperSlide>
           ))}
-        </div>
+        </Swiper>
 
         {/* Navigation Buttons */}
-        <div className="absolute left-2 top-1/2 -translate-y-1/2 z-10">
-          <Button
-            onClick={handlePrev}
-            variant="outline"
-            size="icon"
-            className="w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm border-border hover:bg-primary/10 text-foreground"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </Button>
+        <div className="swiper-button-prev absolute left-2 top-1/2 -translate-y-1/2 z-10 !w-10 !h-10 !rounded-full !bg-background/80 !backdrop-blur-sm !border-border !hover:bg-primary/10 !text-foreground !flex !items-center !justify-center">
+          <ChevronLeft className="w-5 h-5" />
         </div>
-        <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10">
-          <Button
-            onClick={handleNext}
-            variant="outline"
-            size="icon"
-            className="w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm border-border hover:bg-primary/10 text-foreground"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </Button>
+        <div className="swiper-button-next absolute right-2 top-1/2 -translate-y-1/2 z-10 !w-10 !h-10 !rounded-full !bg-background/80 !backdrop-blur-sm !border-border !hover:bg-primary/10 !text-foreground !flex !items-center !justify-center">
+          <ChevronRight className="w-5 h-5" />
         </div>
-      </div>
-
-      {/* Carousel Indicators */}
-      <div className="flex items-center justify-center gap-2 py-4">
-        {breakfastComplexes.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => handleDotClick(index)}
-            className={`h-2 rounded-full transition-all duration-300 ${
-              index === selectedIndex
-                ? "w-8 bg-primary"
-                : "w-2 bg-muted hover:bg-muted-foreground/50"
-            }`}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
       </div>
 
       {/* Content + Add to Cart */}
@@ -544,13 +397,13 @@ export function BreakfastScreen({ onBack }: BreakfastScreenProps) {
               <div className="space-y-4">
                 <div>
                   <label className="text-sm font-medium text-foreground block mb-2">
-                    {t("breakfast.delivery_date")}
+                    {t("breakfast.date")}
                   </label>
                   <Input
                     type="date"
                     value={checkoutDate}
                     onChange={(e) => setCheckoutDate(e.target.value)}
-                    className="bg-background border-border text-foreground h-12"
+                    className="bg-background border-border text-foreground h-12 w-full"
                   />
                 </div>
 

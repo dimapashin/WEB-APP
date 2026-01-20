@@ -49,7 +49,7 @@ const OFFERS = [
 
 export function OffersSection() {
   return (
-    <div className="space-y-6">
+    <div className="px-4 py-6 space-y-6">
       <div className="space-y-2">
         <h2 className="text-xl font-semibold text-foreground">Акции и специальные предложения</h2>
         <p className="text-sm text-muted-foreground">Выгодные условия для вашего комфортного проживания</p>

@@ -30,11 +30,8 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
   const formRef = useRef<HTMLFormElement>(null)
 
   const handleInputFocus = (inputRef: React.RefObject<HTMLInputElement>) => {
-    setTimeout(() => {
-      if (inputRef.current) {
-        inputRef.current.scrollIntoView({ behavior: "smooth", block: "center" })
-      }
-    }, 300) // Delay for keyboard animation
+    // Просто убираем эту функцию, чтобы не вызывать прокрутку при фокусировке
+    // которая приводит к "прыжкам" элементов при открытии клавиатуры
   }
 
   const isValid = name.trim() && roomNumber.trim() && agreed

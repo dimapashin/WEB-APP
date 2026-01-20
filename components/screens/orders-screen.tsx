@@ -65,43 +65,45 @@ export function OrdersScreen({ onBack }: OrdersScreenProps) {
           </div>
         ) : (
           <div className="space-y-3">
-            {[...orders].reverse().map((order) => {
-              const Icon = orderIcons[order.type] || UtensilsCrossed
-              const date = new Date(order.createdAt)
-              const formattedDate = date.toLocaleDateString("ru-RU", {
-                day: "numeric",
-                month: "short",
-                hour: "2-digit",
-                minute: "2-digit",
-              })
+            {[...orders].reverse()
+              .filter(order => order.type !== 'wakeup')
+              .map((order) => {
+                const Icon = orderIcons[order.type] || UtensilsCrossed
+                const date = new Date(order.createdAt)
+                const formattedDate = date.toLocaleDateString("ru-RU", {
+                  day: "numeric",
+                  month: "short",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
 
-              return (
-                <div key={order.id} className="bg-card rounded-2xl p-4">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                      <Icon className="w-6 h-6 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <h3 className="font-medium text-foreground truncate">{order.details}</h3>
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs whitespace-nowrap ${statusColors[order.status]}`}
-                        >
-                          {statusLabels[order.status]}
-                        </span>
+                return (
+                  <div key={order.id} className="bg-card rounded-2xl p-4">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                        <Icon className="w-6 h-6 text-primary" />
                       </div>
-                      <p className="text-sm text-muted-foreground mt-1">{formattedDate}</p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <h3 className="font-medium text-foreground truncate">{order.details}</h3>
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs whitespace-nowrap ${statusColors[order.status]}`}
+                          >
+                            {statusLabels[order.status]}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-1">{formattedDate}</p>
+                      </div>
+                      <button
+                        onClick={() => setDeleteConfirm(order.id)}
+                        className="p-2 hover:bg-muted rounded-lg transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4 text-muted-foreground" />
+                      </button>
                     </div>
-                    <button
-                      onClick={() => setDeleteConfirm(order.id)}
-                      className="p-2 hover:bg-muted rounded-lg transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4 text-muted-foreground" />
-                    </button>
                   </div>
-                </div>
-              )
-            })}
+                )
+              })}
           </div>
         )}
       </div>

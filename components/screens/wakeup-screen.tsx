@@ -59,7 +59,23 @@ export function WakeupScreen({ onBack }: WakeupScreenProps) {
     }, 2000)
   }
 
-  const handleCancelAlarm = (alarmId: string) => {
+  const handleCancelAlarm = async (alarmId: string) => {
+    // Find the alarm to be cancelled
+    const alarmToCancel = alarms.find(alarm => alarm.id === alarmId);
+    
+    if (alarmToCancel && guest) {
+      // Send cancellation notification to Telegram
+      await sendToTelegram({
+        type: "wakeup",
+        roomNumber: guest.roomNumber,
+        guestName: guest.name,
+        details: `Отмена будильника на ${alarmToCancel.date} в ${alarmToCancel.time}${alarmToCancel.comment ? `. Комментарий: ${alarmToCancel.comment}` : ""}`,
+        date: alarmToCancel.date,
+        time: alarmToCancel.time,
+      });
+    }
+    
+    // Remove the alarm from store
     removeAlarm(alarmId)
   }
 

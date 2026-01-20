@@ -4,6 +4,7 @@ import { useState } from "react"
 import { ArrowLeft, Car, UtensilsCrossed, Map, Heart, Check, AlertCircle, MapPin, Clock, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
 import { useAppStore } from "@/lib/store"
 import { motion, AnimatePresence } from "framer-motion"
 import { sendToTelegram } from "@/lib/telegram-service"
@@ -42,6 +43,7 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
   const [taxiAddress, setTaxiAddress] = useState("")
   const [taxiSuggestions, setTaxiSuggestions] = useState<string[]>([])
   const [taxiComment, setTaxiComment] = useState("")
+  const [needChildSeat, setNeedChildSeat] = useState(false)
   const [restaurantName, setRestaurantName] = useState("")
   const [restaurantSuggestions, setRestaurantSuggestions] = useState<string[]>([])
   const [restaurantGuests, setRestaurantGuests] = useState("")
@@ -81,8 +83,10 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
   const handleTaxiSubmit = async () => {
     if (!taxiDate || !taxiTime || !taxiAddress) return
 
-    const orderDetails = `Адрес: ${taxiAddress}, Время: ${taxiTime}${taxiComment ? `, Комментарий: ${taxiComment}` : ""}`
-    
+    let orderDetails = `Адрес: ${taxiAddress}, Время: ${taxiTime}`
+    if (taxiComment) orderDetails += `, Комментарий: ${taxiComment}`
+    if (needChildSeat) orderDetails += `, Нужно детское кресло`
+
     addOrder({
       type: "taxi",
       details: orderDetails,
@@ -112,6 +116,7 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
       setTaxiAddress("")
       setTaxiComment("")
       setTaxiSuggestions([])
+      setNeedChildSeat(false)
     }, 2000)
   }
 
@@ -168,8 +173,8 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
 
   if (activeService === "taxi") {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <div className="flex items-center justify-between p-4" style={{ paddingTop: "max(1.5rem, env(safe-area-inset-top))" }}>
+      <div className="min-h-screen bg-background flex flex-col app-screen">
+        <div className="flex items-center justify-between p-4">
           <button onClick={() => setActiveService(null)} className="p-2 -ml-2">
             <ArrowLeft className="w-6 h-6 text-foreground" />
           </button>
@@ -178,40 +183,51 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
         </div>
         <div className="flex-1 px-4 py-6 space-y-4 overflow-y-auto">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Дата</label>
+            <label className="text-sm font-medium text-foreground block mb-2">Дата</label>
             <Input
               type="date"
               value={taxiDate}
               onChange={(e) => setTaxiDate(e.target.value)}
-              className="bg-card border-border text-foreground h-12"
+              className="bg-card border-border text-foreground h-12 w-full"
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Время</label>
+            <label className="text-sm font-medium text-foreground block mb-2">Время</label>
             <Input
               type="time"
               value={taxiTime}
               onChange={(e) => setTaxiTime(e.target.value)}
-              className="bg-card border-border text-foreground h-12"
+              className="bg-card border-border text-foreground h-12 w-full"
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Место назначения</label>
+            <label className="text-sm font-medium text-foreground block mb-2">Место назначения</label>
             <Input
               placeholder="Например: Эрмитаж"
               value={taxiAddress}
               onChange={(e) => setTaxiAddress(e.target.value)}
-              className="bg-card border-border text-foreground placeholder:text-muted-foreground h-12"
+              className="bg-card border-border text-foreground placeholder:text-muted-foreground h-12 w-full"
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Комментарий (необязательно)</label>
+            <label className="text-sm font-medium text-foreground block mb-2">Комментарий (необязательно)</label>
             <textarea
-              placeholder="Дополнительная информация"
+              placeholder="Класс авто, детское кресло, особые пожелания"
               value={taxiComment}
               onChange={(e) => setTaxiComment(e.target.value)}
-              className="w-full bg-card border border-border rounded-xl p-3 text-foreground placeholder:text-muted-foreground text-sm h-20 resize-none"
+              className="w-full bg-card border border-border rounded-xl p-3 text-foreground placeholder:text-muted-foreground text-sm min-h-[120px] resize-none"
             />
+          </div>
+          <div className="flex items-start gap-3 pt-2">
+            <Checkbox
+              id="child-seat"
+              checked={needChildSeat}
+              onCheckedChange={(checked) => setNeedChildSeat(checked as boolean)}
+              className="mt-1 border-muted-foreground data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+            />
+            <label htmlFor="child-seat" className="text-sm text-foreground leading-tight">
+              Нужно детское кресло
+            </label>
           </div>
         </div>
         <div className="p-4">

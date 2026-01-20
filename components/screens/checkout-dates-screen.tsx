@@ -36,27 +36,24 @@ export function CheckoutDatesScreen({ guestName, roomNumber, onConfirm, onBack }
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6" style={{ paddingTop: "max(1.5rem, env(safe-area-inset-top))" }}>
-      <div className="w-full max-w-sm space-y-6">
-        <div className="flex items-center gap-3 mb-4">
-          <Button
-            onClick={onBack}
-            variant="ghost"
-            className="p-2 h-auto text-foreground hover:text-primary"
-          >
-            <ChevronLeft className="w-6 h-6" />
-          </Button>
-          <h1 className="text-xl font-semibold text-foreground">Уточнение дат</h1>
-        </div>
+    <div className="min-h-screen bg-background">
+      <div className="flex items-center justify-between p-4">
+        <Button onClick={onBack} variant="ghost" className="p-2 h-auto text-foreground hover:text-primary">
+          <ChevronLeft className="w-6 h-6" />
+        </Button>
+        <h1 className="text-lg font-semibold text-foreground">Уточнение дат</h1>
+        <div className="w-10" />
+      </div>
+      <div className="px-4 py-6 space-y-6">
 
-        <div className="bg-card border border-border rounded-lg p-4 space-y-2">
+        <div className="bg-card border border-border rounded-xl p-4 space-y-2">
           <p className="text-sm text-muted-foreground">Гость: {guestName}</p>
           <p className="text-sm text-muted-foreground">Комната: {roomNumber}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Дата заезда</label>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">Дата заезда</label>
             <Input
               type="date"
               value={checkInDate}
@@ -65,8 +62,8 @@ export function CheckoutDatesScreen({ guestName, roomNumber, onConfirm, onBack }
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Дата выезда</label>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">Дата выезда</label>
             <Input
               type="date"
               value={checkoutDate}
@@ -79,7 +76,7 @@ export function CheckoutDatesScreen({ guestName, roomNumber, onConfirm, onBack }
           <Button
             type="submit"
             disabled={!isValid || loading}
-            className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 mt-6"
+            className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
             {loading ? "Подтверждение..." : "Подтвердить"}
           </Button>

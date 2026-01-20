@@ -36,7 +36,7 @@ export function MainScreen({
 
   return (
     <div className="min-h-screen bg-background app-screen">
-      <div className="px-4 py-4 flex items-center justify-center relative">
+      <div className="px-4 py-6 flex items-center justify-center relative">
         <Button
           onClick={() => setLanguage(language === "ru" ? "en" : "ru")}
           variant="outline"
@@ -55,8 +55,8 @@ export function MainScreen({
         </button>
       </div>
 
-      <div className="px-4 pb-6 space-y-6">
-        <div className="space-y-4">
+      <div className="px-4 pb-6 space-y-7 main-screen-content">
+        <div className="space-y-2">
           <div className="flex justify-between items-start gap-4">
             <h1 className="text-2xl font-semibold text-foreground">
               {t(`main.greeting_${getGreetingType()}`)}, {guest?.name}
@@ -68,15 +68,17 @@ export function MainScreen({
         </div>
 
         {/* Weather Widget */}
-        <WeatherWidget />
+        <div className="pt-2">
+          <WeatherWidget />
+        </div>
 
         {/* Quick Actions */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           <QuickActions onOrdersClick={onOrdersClick} onWakeupClick={onWakeupClick} onAboutClick={onAboutClick} />
         </div>
 
         {/* Service Cards */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           <ServiceCards
             onBreakfastClick={onBreakfastClick}
             onConciergeClick={onConciergeClick}

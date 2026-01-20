@@ -4,17 +4,10 @@ import { Heart, AlertCircle, CheckCircle2, XCircle } from "lucide-react"
 
 export function AnimalsSection() {
   return (
-    <div className="space-y-6">
+    <div className="px-4 py-6 space-y-6">
       <div className="space-y-2">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-            <Heart className="w-6 h-6 text-primary" />
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold text-foreground">Проживание с животными</h2>
-            <p className="text-sm text-muted-foreground">Условия и правила размещения с питомцами</p>
-          </div>
-        </div>
+        <h2 className="text-xl font-semibold text-foreground">Проживание с животными</h2>
+        <p className="text-sm text-muted-foreground">Условия и правила размещения с питомцами</p>
       </div>
 
       <div className="bg-card rounded-2xl p-4 space-y-4">

@@ -204,9 +204,14 @@
 
 /* Основной фикс для всех экранов КРОМЕ авторизации */
 .app-screen {
-  padding-top: 60px !important;
+  padding-top: 80px !important;
   min-height: 100vh;
   position: relative;
+}
+
+/* Улучшенные отступы для контента на главном экране */
+.main-screen-content {
+  padding-top: 10px;
 }
 
 /* Специальный стиль для кнопки "Корзина" в разделе завтраков */
