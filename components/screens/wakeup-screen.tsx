@@ -102,7 +102,7 @@ export function WakeupScreen({ onBack }: WakeupScreenProps) {
         <div className="w-10" />
       </div>
 
-      <div className="flex-1 px-4 py-2 space-y-6 overflow-y-auto">
+      <div className="flex-1 px-4 py-6 space-y-6 overflow-y-auto">
         {alarms.length > 0 ? (
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Установленные будильники</label>
@@ -117,8 +117,11 @@ export function WakeupScreen({ onBack }: WakeupScreenProps) {
                 })
 
                 return (
-                  <div
+                  <motion.div
                     key={alarm.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
                     className="bg-gradient-to-br from-card to-card/80 border border-primary/10 rounded-2xl p-5 shadow-lg"
                   >
                     <div className="flex items-start gap-4">
@@ -151,7 +154,7 @@ export function WakeupScreen({ onBack }: WakeupScreenProps) {
                         <Trash2 className="w-4 h-4 text-muted-foreground group-hover:text-destructive transition-colors" />
                       </button>
                     </div>
-                  </div>
+                  </motion.div>
                 )
               })}
             </div>
@@ -192,7 +195,7 @@ export function WakeupScreen({ onBack }: WakeupScreenProps) {
                   />
                 </div>
 
-                <div className="space-y-2 mt-4">
+                <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground">Комментарий (необязательно)</label>
                   <textarea
                     value={comment}

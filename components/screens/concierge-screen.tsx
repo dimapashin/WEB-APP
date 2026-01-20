@@ -1,11 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { ArrowLeft, Car, UtensilsCrossed, Map, Heart, Check, AlertCircle, MapPin, Clock, X, Minus, Plus, CheckCircle2 } from "lucide-react"
+import { ArrowLeft, Car, UtensilsCrossed, Map, Heart, Check, AlertCircle, MapPin, Clock, X, Minus, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useAppStore } from "@/lib/store"
+import { motion, AnimatePresence } from "framer-motion"
 import { sendToTelegram } from "@/lib/telegram-service"
 import { tours, decorations, type Tour, type Decoration } from "@/lib/tours-decorations-data"
 
@@ -170,7 +171,15 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
 
   if (activeService === "taxi") {
     return (
-      <div className="min-h-screen bg-background flex flex-col app-screen">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key="taxi"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+          className="min-h-screen bg-background flex flex-col app-screen"
+        >
         <div className="flex items-center justify-between p-4" style={{ paddingTop: `calc(1.5rem + 5rem)` }}>
           <button onClick={() => setActiveService(null)} className="p-2 -ml-2">
             <ArrowLeft className="w-6 h-6 text-foreground" />
@@ -178,7 +187,7 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
           <h1 className="text-lg font-semibold text-foreground">Заказ такси</h1>
           <div className="w-10" />
         </div>
-        <div className="flex-1 px-4 py-2 space-y-4 overflow-y-auto">
+        <div className="flex-1 px-4 py-6 space-y-4 overflow-y-auto">
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground block">Дата</label>
             <Input
@@ -236,13 +245,22 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
             Заказать такси
           </Button>
         </div>
-      </div>
+        </motion.div>
+      </AnimatePresence>
     )
   }
 
   if (activeService === "restaurant") {
     return (
-      <div className="min-h-screen bg-background flex flex-col app-screen">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key="restaurant"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+          className="min-h-screen bg-background flex flex-col app-screen"
+        >
         <div className="flex items-center justify-between p-4" style={{ paddingTop: `calc(1.5rem + 5rem)` }}>
           <button onClick={() => setActiveService(null)} className="p-2 -ml-2">
             <ArrowLeft className="w-6 h-6 text-foreground" />
@@ -250,7 +268,7 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
           <h1 className="text-lg font-semibold text-foreground">Бронь столика</h1>
           <div className="w-10" />
         </div>
-        <div className="flex-1 px-4 py-2 space-y-4 overflow-y-auto">
+        <div className="flex-1 px-4 py-6 space-y-6 overflow-y-auto">
           {/* Restaurant Name */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Название ресторана</label>
@@ -266,7 +284,7 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
           <div className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Количество гостей</label>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-3">
                 <button
                   onClick={() => {
                     const num = parseInt(restaurantGuests) || 1
@@ -322,13 +340,22 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
             Забронировать столик
           </Button>
         </div>
-      </div>
+        </motion.div>
+      </AnimatePresence>
     )
   }
 
   if (activeService === "excursion") {
     return (
-      <div className="min-h-screen bg-background app-screen">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key="excursion"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+          className="min-h-screen bg-background app-screen"
+        >
         <div className="flex items-center justify-between p-4" style={{ paddingTop: `calc(1.5rem + 5rem)` }}>
           <button onClick={() => setActiveService(null)} className="p-2 -ml-2">
             <ArrowLeft className="w-6 h-6 text-foreground" />
@@ -336,7 +363,7 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
           <h1 className="text-lg font-semibold text-foreground">Экскурсии</h1>
           <div className="w-10" />
         </div>
-        <div className="px-4 py-2 space-y-4 overflow-y-auto">
+        <div className="px-4 py-6 space-y-4 overflow-y-auto">
           {tours.map((tour) => (
             <div
               key={tour.id}
@@ -382,13 +409,22 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
             </div>
           ))}
         </div>
-      </div>
+        </motion.div>
+      </AnimatePresence>
     )
   }
 
   if (activeService === "decoration") {
     return (
-      <div className="min-h-screen bg-background app-screen">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key="decoration"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+          className="min-h-screen bg-background app-screen"
+        >
         <div className="flex items-center justify-between p-4" style={{ paddingTop: `calc(1.5rem + 5rem)` }}>
           <button onClick={() => setActiveService(null)} className="p-2 -ml-2">
             <ArrowLeft className="w-6 h-6 text-foreground" />
@@ -396,7 +432,7 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
           <h1 className="text-lg font-semibold text-foreground">Украшение номера</h1>
           <div className="w-10" />
         </div>
-        <div className="px-4 py-2 space-y-4 overflow-y-auto">
+        <div className="px-4 py-6 space-y-4 overflow-y-auto">
           {decorations.map((decoration) => (
             <div
               key={decoration.id}
@@ -443,7 +479,8 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
             </div>
           ))}
         </div>
-      </div>
+        </motion.div>
+      </AnimatePresence>
     )
   }
 
@@ -458,11 +495,14 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
       </div>
 
       <div className="px-4 py-2 space-y-3">
-        {services.map((service) => (
-          <button
+        {services.map((service, index) => (
+          <motion.button
             key={service.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: index * 0.05 }}
             onClick={() => handleServiceClick(service.id, service.working)}
-            className="w-full bg-card rounded-2xl p-4 flex items-center gap-4 transition-scale active:scale-[0.98]"
+            className="w-full bg-card rounded-2xl p-4 flex items-center gap-4 transition-scale active:scale-[0.98] hover:bg-card/80"
           >
             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
               <service.icon className="w-6 h-6 text-primary" />
@@ -474,17 +514,24 @@ export function ConciergeScreen({ onBack }: ConciergeScreenProps) {
             {!service.working && (
               <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">Скоро</span>
             )}
-          </button>
+          </motion.button>
         ))}
       </div>
 
       {/* Unavailable Toast */}
-      {showUnavailable && (
-        <div className="fixed bottom-6 left-4 right-4 bg-card border border-border rounded-2xl p-4 flex items-center gap-3 z-50">
-          <AlertCircle className="w-5 h-5 text-muted-foreground" />
-          <span className="text-foreground">Услуга временно недоступна</span>
-        </div>
-      )}
+      <AnimatePresence>
+        {showUnavailable && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="fixed bottom-6 left-4 right-4 bg-card border border-border rounded-2xl p-4 flex items-center gap-3"
+          >
+            <AlertCircle className="w-5 h-5 text-muted-foreground" />
+            <span className="text-foreground">Услуга временно недоступна</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

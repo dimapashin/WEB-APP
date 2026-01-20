@@ -27,6 +27,7 @@ export async function sendToTelegram(orderData: NotificationData): Promise<boole
     taxi: "🚕 Такси",
     restaurant: "🍽️ Ресторан",
     wakeup: "⏰ Будильник",
+    iron: "👔 Утюг и гладильная доска",
     supplies: "🛒 Доп. услуги",
     wifi: "📶 Wi-Fi",
     feedback: "⭐ Обратная связь",

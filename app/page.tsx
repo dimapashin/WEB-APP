@@ -79,9 +79,9 @@ export default function Home() {
   }
 
   const pageVariants = {
-    initial: { opacity: 0, x: 20 },
-    animate: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: -20 },
+    initial: { opacity: 0, x: 20, scale: 0.98 },
+    animate: { opacity: 1, x: 0, scale: 1 },
+    exit: { opacity: 0, x: -20, scale: 0.98 },
   }
 
   const handleLogout = () => {
@@ -98,7 +98,7 @@ export default function Home() {
           animate="animate"
           exit="exit"
           variants={pageVariants}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
           className="min-h-screen"
         >
           {currentScreen === "auth" && <AuthScreen onSuccess={() => setCurrentScreen("main")} />}

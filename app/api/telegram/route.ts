@@ -8,6 +8,7 @@ const typeLabels: Record<string, string> = {
   taxi: "🚕 Такси",
   restaurant: "🍽️ Ресторан",
   wakeup: "⏰ Будильник",
+  iron: "👔 Утюг",
   supplies: "🛒 Доп. услуги",
 }
 

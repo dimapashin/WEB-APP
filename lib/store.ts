@@ -19,7 +19,7 @@ export interface OrderItem {
 
 export interface Order {
   id: string
-  type: "breakfast" | "taxi" | "restaurant" | "wakeup" | "supplies"
+  type: "breakfast" | "taxi" | "restaurant" | "wakeup" | "iron" | "supplies"
   items?: OrderItem[]
   details: string
   time?: string

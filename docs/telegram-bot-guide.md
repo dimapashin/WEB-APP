@@ -225,7 +225,7 @@ const ADMIN_GROUP_ID = process.env.TELEGRAM_ADMIN_GROUP_ID!; // ID группы 
 
 interface OrderData {
   id: string;
-  type: 'breakfast' | 'wakeup' | 'taxi' | 'restaurant';
+  type: 'breakfast' | 'wakeup' | 'taxi' | 'iron' | 'restaurant';
   guestName: string;
   roomNumber: string;
   date?: string;
@@ -238,6 +238,7 @@ const orderTypeEmoji: Record<string, string> = {
   breakfast: '🥐',
   wakeup: '⏰',
   taxi: '🚕',
+  iron: '👔',
   restaurant: '🍽️',
 };
 
@@ -286,6 +287,7 @@ function getOrderTypeName(type: string): string {
     breakfast: 'Завтрак',
     wakeup: 'Будильник',
     taxi: 'Такси',
+    iron: 'Утюг и гладильная доска',
     restaurant: 'Ресторан',
   };
   return names[type] || type;

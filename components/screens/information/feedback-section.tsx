@@ -75,7 +75,7 @@ export function FeedbackSection() {
     : false
 
   return (
-    <div className="px-4 py-2 space-y-6">
+    <div className="px-4 py-6 space-y-6">
       <div className="space-y-2">
         <h2 className="text-xl font-semibold text-foreground">Ваше мнение важно для нас</h2>
         <p className="text-sm text-muted-foreground">Помогите нам стать лучше! Оцените ваш опыт проживания</p>
@@ -87,18 +87,18 @@ export function FeedbackSection() {
             {QUESTIONS.map((question) => (
               <div key={question.id} className="bg-card rounded-2xl p-4 space-y-3">
                 <p className="font-medium text-foreground">{question.text}</p>
-                <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
+                <div className="flex items-center gap-0.5 overflow-x-auto pb-1 scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
                   {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => (
                     <button
                       key={star}
                       onClick={() => handleRatingChange(question.id, star)}
-                      className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all shrink-0 ${
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all shrink-0 ${
                         ratings[question.id] >= star
-                          ? "bg-primary text-primary-foreground"
+                          ? "bg-primary text-primary-foreground scale-110"
                           : "bg-muted text-muted-foreground hover:bg-primary/20"
                       }`}
                     >
-                      <Star className={`w-5 h-5 ${ratings[question.id] >= star ? "fill-current" : ""}`} />
+                      <Star className={`w-3.5 h-3.5 ${ratings[question.id] >= star ? "fill-current" : ""}`} />
                     </button>
                   ))}
                 </div>

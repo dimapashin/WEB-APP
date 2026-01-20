@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useT } from "@/lib/i18n"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, Wifi, Star, Gift, Heart, Map, UtensilsCrossed, Car, Shirt, Sparkles, ShoppingBag, Brush } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 import { WifiSection } from "./information/wifi-section"
 import { FeedbackSection } from "./information/feedback-section"
 import { OffersSection } from "./information/offers-section"
@@ -29,7 +30,15 @@ export function InformationScreen({ onBack }: InformationScreenProps) {
 
   if (activeCard && selectedCard) {
     return (
-      <div className="min-h-screen bg-background flex flex-col app-screen">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeCard}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+          className="min-h-screen bg-background flex flex-col app-screen"
+        >
         <div className="flex items-center justify-between p-4" style={{ paddingTop: `calc(1.5rem + 5rem)` }}>
           <button onClick={() => setActiveCard(null)} className="p-2 -ml-2">
             <ChevronLeft className="w-6 h-6 text-foreground" />
@@ -40,7 +49,8 @@ export function InformationScreen({ onBack }: InformationScreenProps) {
         <div className="flex-1 overflow-y-auto">
           {selectedCard.component}
         </div>
-      </div>
+        </motion.div>
+      </AnimatePresence>
     )
   }
 
@@ -54,12 +64,15 @@ export function InformationScreen({ onBack }: InformationScreenProps) {
         <div className="w-10" />
       </div>
 
-      <div className="px-4 py-2 space-y-3">
-        {INFORMATION_CARDS.map((card) => (
-          <button
+      <div className="px-4 py-6 space-y-3">
+        {INFORMATION_CARDS.map((card, index) => (
+          <motion.button
             key={card.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: index * 0.05 }}
             onClick={() => setActiveCard(card.id)}
-            className="w-full bg-card rounded-2xl p-4 flex items-center gap-4 transition-scale active:scale-[0.98]"
+            className="w-full bg-card rounded-2xl p-4 flex items-center gap-4 transition-scale active:scale-[0.98] hover:bg-card/80"
           >
             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
               <card.icon className="w-6 h-6 text-primary" />
@@ -68,7 +81,7 @@ export function InformationScreen({ onBack }: InformationScreenProps) {
               <h3 className="font-medium text-foreground">{card.title}</h3>
               <p className="text-sm text-muted-foreground">{card.subtitle}</p>
             </div>
-          </button>
+          </motion.button>
         ))}
       </div>
     </div>

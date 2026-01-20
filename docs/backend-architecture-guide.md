@@ -34,7 +34,7 @@ CREATE TABLE users (
 CREATE TABLE orders (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  type VARCHAR(50) NOT NULL, -- 'breakfast', 'wakeup', 'taxi', etc.
+  type VARCHAR(50) NOT NULL, -- 'breakfast', 'wakeup', 'taxi', 'iron', etc.
   status VARCHAR(20) NOT NULL DEFAULT 'pending', -- 'pending', 'confirmed', 'completed', 'cancelled'
   details TEXT,
   order_date DATE,
