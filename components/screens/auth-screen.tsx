@@ -6,8 +6,12 @@ import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useAppStore } from "@/lib/store"
 import { useT, useLanguage } from "@/lib/i18n"
-import { CheckoutDatesScreen } from "./checkout-dates-screen"
 import { Languages } from "lucide-react"
+
+// 👉 Подключаем премиальную модалку (вариант B)
+import { CheckoutDatesModal_B } from "@/components/modals/checkout-dates-modal-b"
+// или ultra-premium:
+// import { CheckoutDatesModal_C } from "@/components/modals/checkout-dates-modal-c"
 
 export function AuthScreen({ onSuccess }) {
   const [name, setName] = useState("")
@@ -15,7 +19,9 @@ export function AuthScreen({ onSuccess }) {
   const [agreed, setAgreed] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-  const [step, setStep] = useState("credentials")
+
+  // 👉 новое состояние для модалки
+  const [showDatesModal, setShowDatesModal] = useState(false)
 
   const setGuest = useAppStore((s) => s.setGuest)
   const t = useT()
@@ -48,7 +54,9 @@ export function AuthScreen({ onSuccess }) {
     }
 
     setLoading(false)
-    setStep("dates")
+
+    // 👉 вместо step — открываем модалку
+    setShowDatesModal(true)
   }
 
   const handleDatesConfirm = (checkInDate, checkoutDate) => {
@@ -59,27 +67,15 @@ export function AuthScreen({ onSuccess }) {
       checkoutDate,
       telegramId: String(Date.now()),
     })
-    onSuccess()
-  }
 
-  if (step === "dates") {
-    return (
-      <CheckoutDatesScreen
-        guestName={name}
-        roomNumber={roomNumber}
-        onConfirm={handleDatesConfirm}
-        onBack={() => setStep("credentials")}
-      />
-    )
+    onSuccess()
   }
 
   return (
     <div className="min-h-screen bg-background flex flex-col app-screen px-6 pb-[env(safe-area-inset-bottom)]">
 
-      {/* HEADER WITH LANGUAGE SWITCH */}
-      <div
-        className="flex justify-end pt-[calc(env(safe-area-inset-top)+1rem)] pb-6"
-      >
+      {/* HEADER */}
+      <div className="flex justify-end pt-[calc(env(safe-area-inset-top)+1rem)] pb-6">
         <Button
           onClick={() => setLanguage(language === "ru" ? "en" : "ru")}
           variant="outline"
@@ -170,6 +166,14 @@ export function AuthScreen({ onSuccess }) {
           </Button>
         </form>
       </div>
+
+      {/* 👉 Премиальная модалка выбора дат */}
+      {showDatesModal && (
+        <CheckoutDatesModal_B
+          onConfirm={handleDatesConfirm}
+          onClose={() => setShowDatesModal(false)}
+        />
+      )}
     </div>
   )
 }
