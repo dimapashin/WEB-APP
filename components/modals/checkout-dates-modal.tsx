@@ -35,43 +35,41 @@ export function CheckoutDatesModal({ onConfirm, onClose }: CheckoutDatesModalPro
     <AnimatePresence>
       {/* Затемнение */}
       <motion.div
-        className="fixed inset-0 bg-black/70 backdrop-blur-md z-40"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
       />
 
-      {/* Ultra‑premium модалка */}
+      {/* Модалка */}
       <motion.div
         className="
           fixed left-1/2 top-1/2 z-50 
           w-[92%] max-w-sm 
           -translate-x-1/2 -translate-y-1/2
-          rounded-3xl 
-          shadow-[0_8px_32px_rgba(0,0,0,0.25)]
-          border border-white/20
-          bg-white/10 
-          backdrop-blur-xl 
-          p-8 space-y-8
+          bg-card/90 backdrop-blur-xl 
+          border border-border/40 
+          rounded-2xl shadow-2xl shadow-black/40
+          p-7 space-y-7
         "
-        initial={{ opacity: 0, scale: 0.88 }}
+        initial={{ opacity: 0, scale: 0.94 }}
         animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.88 }}
-        transition={{ type: "spring", stiffness: 260, damping: 22 }}
+        exit={{ opacity: 0, scale: 0.94 }}
+        transition={{ duration: 0.22, ease: "easeOut" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-white drop-shadow-sm">
-            {t("auth.dates_title")}
+          <h2 className="text-xl font-semibold text-foreground">
+            Выбор дат проживания
           </h2>
 
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-white/20 transition"
+            className="p-2 rounded-full hover:bg-muted/30 transition"
           >
-            <X className="w-5 h-5 text-white/80" />
+            <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
 
@@ -79,30 +77,30 @@ export function CheckoutDatesModal({ onConfirm, onClose }: CheckoutDatesModalPro
         <div className="space-y-6">
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-white/90">
-              {t("auth.checkin")}
+            <label className="text-sm font-medium text-foreground">
+              Дата заезда
             </label>
-            <div className="rounded-xl overflow-hidden bg-white/20 border border-white/30 backdrop-blur-md">
+            <div className="rounded-xl overflow-hidden border border-border/60 bg-card/50">
               <Input
                 type="date"
                 value={checkInDate}
                 onChange={(e) => setCheckInDate(e.target.value)}
-                className="bg-transparent text-white h-12 w-full px-4 appearance-none"
+                className="bg-transparent text-foreground h-12 w-full px-4 appearance-none"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-white/90">
-              {t("auth.checkout")}
+            <label className="text-sm font-medium text-foreground">
+              Дата выезда
             </label>
-            <div className="rounded-xl overflow-hidden bg-white/20 border border-white/30 backdrop-blur-md">
+            <div className="rounded-xl overflow-hidden border border-border/60 bg-card/50">
               <Input
                 type="date"
                 value={checkoutDate}
                 min={checkInDate}
                 onChange={(e) => setCheckoutDate(e.target.value)}
-                className="bg-transparent text-white h-12 w-full px-4 appearance-none"
+                className="bg-transparent text-foreground h-12 w-full px-4 appearance-none"
               />
             </div>
           </div>
@@ -112,9 +110,9 @@ export function CheckoutDatesModal({ onConfirm, onClose }: CheckoutDatesModalPro
         <Button
           disabled={!isValid || loading}
           onClick={handleSubmit}
-          className="w-full h-12 bg-white/90 text-black font-semibold hover:bg-white disabled:opacity-50"
+          className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
         >
-          {loading ? t("auth.confirming") : t("auth.confirm")}
+          {loading ? "Подтверждение..." : "Подтвердить"}
         </Button>
       </motion.div>
     </AnimatePresence>
