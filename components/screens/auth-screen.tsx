@@ -67,8 +67,6 @@ export function AuthScreen({ onSuccess }) {
   if (step === "dates") {
     return (
       <CheckoutDatesScreen
-        guestName={name}
-        roomNumber={roomNumber}
         onConfirm={handleDatesConfirm}
         onBack={() => setStep("credentials")}
       />
@@ -78,10 +76,10 @@ export function AuthScreen({ onSuccess }) {
   return (
     <div className="min-h-screen bg-background flex flex-col app-screen px-6 pb-[env(safe-area-inset-bottom)] relative">
 
-      {/* LANGUAGE SWITCH — стиль как на главном экране */}
+      {/* LANGUAGE SWITCH — как на главном экране */}
       <motion.button
         onClick={() => setLanguage(language === "ru" ? "en" : "ru")}
-        className="absolute left-6 top-[calc(env(safe-area-inset-top)+1rem)] h-9 w-14 border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary font-semibold transition-all duration-200 shadow-sm flex items-center justify-center gap-1 rounded-md"
+        className="absolute left-6 top-[calc(env(safe-area-inset-top)+1.25rem)] h-9 w-14 border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary font-semibold transition-all duration-200 shadow-sm flex items-center justify-center gap-1 rounded-md"
         {...tap}
       >
         <Languages className="w-4 h-4" />
@@ -104,7 +102,7 @@ export function AuthScreen({ onSuccess }) {
         {/* FORM */}
         <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-5">
 
-          {/* NAME */}
+          {/* NAME FIELD */}
           <div>
             <div className="bg-card/60 border border-border/60 rounded-xl h-12 flex items-center px-4 shadow-sm backdrop-blur-sm">
               <Input
@@ -118,7 +116,7 @@ export function AuthScreen({ onSuccess }) {
             </div>
           </div>
 
-          {/* ROOM NUMBER */}
+          {/* ROOM NUMBER FIELD */}
           <div>
             <div className={`bg-card/60 border rounded-xl h-12 flex items-center px-4 shadow-sm backdrop-blur-sm ${
               error ? "border-destructive" : "border-border/60"
