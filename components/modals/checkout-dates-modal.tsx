@@ -12,7 +12,7 @@ interface CheckoutDatesModalProps {
   onClose: () => void
 }
 
-export function CheckoutDatesModal_C({ onConfirm, onClose }: CheckoutDatesModalProps) {
+export function CheckoutDatesModal({ onConfirm, onClose }: CheckoutDatesModalProps) {
   const t = useT()
 
   const today = new Date().toISOString().split("T")[0]

@@ -8,10 +8,8 @@ import { useAppStore } from "@/lib/store"
 import { useT, useLanguage } from "@/lib/i18n"
 import { Languages } from "lucide-react"
 
-// 👉 Подключаем премиальную модалку (вариант B)
-import { CheckoutDatesModal_B } from "@/components/modals/checkout-dates-modal-b"
-// или ultra-premium:
-// import { CheckoutDatesModal_C } from "@/components/modals/checkout-dates-modal-c"
+// 👉 Подключаем единственную модалку
+import { CheckoutDatesModal } from "@/components/modals/checkout-dates-modal"
 
 export function AuthScreen({ onSuccess }) {
   const [name, setName] = useState("")
@@ -20,7 +18,7 @@ export function AuthScreen({ onSuccess }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
-  // 👉 новое состояние для модалки
+  // 👉 состояние модалки
   const [showDatesModal, setShowDatesModal] = useState(false)
 
   const setGuest = useAppStore((s) => s.setGuest)
@@ -55,7 +53,7 @@ export function AuthScreen({ onSuccess }) {
 
     setLoading(false)
 
-    // 👉 вместо step — открываем модалку
+    // 👉 открываем модалку выбора дат
     setShowDatesModal(true)
   }
 
@@ -169,7 +167,7 @@ export function AuthScreen({ onSuccess }) {
 
       {/* 👉 Премиальная модалка выбора дат */}
       {showDatesModal && (
-        <CheckoutDatesModal_B
+        <CheckoutDatesModal
           onConfirm={handleDatesConfirm}
           onClose={() => setShowDatesModal(false)}
         />
