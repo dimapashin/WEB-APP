@@ -1,6 +1,8 @@
 "use client"
 
 import { Gift, Users, Calendar, ExternalLink } from "lucide-react"
+import { motion } from "framer-motion"
+import { fadeInUp, tap } from "@/lib/animations"
 
 const OFFERS = [
   {
@@ -20,7 +22,11 @@ const OFFERS = [
     title: "Раннее бронирование — скидка 10%",
     description: "Забронируйте апартаменты минимум за 7 дней до заезда и получите скидку 10%",
     icon: Calendar,
-    details: ["Бронирование минимум за 7 дней до заезда", "Скидка 10% на стоимость проживания", "Применяется автоматически при бронировании"],
+    details: [
+      "Бронирование минимум за 7 дней до заезда",
+      "Скидка 10% на стоимость проживания",
+      "Применяется автоматически при бронировании",
+    ],
   },
   {
     id: 3,
@@ -37,49 +43,75 @@ const OFFERS = [
 
 export function OffersSection() {
   return (
-    <div className="px-4 py-6 space-y-6">
-      <div className="space-y-2">
+    <div className="space-y-6">
+      {/* HEADER */}
+      <motion.div {...fadeInUp(0.05)} className="space-y-2">
         <h2 className="text-xl font-semibold text-foreground">Акции и специальные предложения</h2>
-        <p className="text-sm text-muted-foreground">Выгодные условия для вашего комфортного проживания</p>
-      </div>
+        <p className="text-sm text-muted-foreground">
+          Выгодные условия для вашего комфортного проживания
+        </p>
+      </motion.div>
 
-      <div className="space-y-4">
-        {OFFERS.map((offer) => (
-          <div key={offer.id} className="bg-card rounded-2xl p-4 space-y-3 border border-border">
+      {/* OFFERS LIST */}
+      <div className="space-y-6">
+        {OFFERS.map((offer, index) => (
+          <motion.div
+            key={offer.id}
+            {...fadeInUp(0.1 + index * 0.05)}
+            className="
+              bg-card/60 border border-border/60 rounded-2xl p-4
+              shadow-sm backdrop-blur-sm space-y-4
+            "
+          >
+            {/* HEADER ROW */}
             <div className="flex items-start gap-3">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 shadow-sm backdrop-blur-sm flex items-center justify-center shrink-0">
                 <offer.icon className="w-6 h-6 text-primary" />
               </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-foreground mb-1">{offer.title}</h3>
+
+              <div className="flex-1 space-y-1">
+                <h3 className="font-semibold text-foreground">{offer.title}</h3>
                 <p className="text-sm text-muted-foreground">{offer.description}</p>
               </div>
             </div>
-            <div className="space-y-2 pl-15">
+
+            {/* DETAILS LIST */}
+            <div className="space-y-2">
               {offer.details.map((detail, idx) => (
-                <div key={idx} className="flex items-start gap-2">
+                <motion.div
+                  key={idx}
+                  {...fadeInUp(0.15 + idx * 0.03)}
+                  className="flex items-start gap-2"
+                >
                   <span className="text-primary mt-0.5">•</span>
                   <span className="text-sm text-foreground">{detail}</span>
-                </div>
+                </motion.div>
               ))}
-              {offer.note && (
-                <p className="text-xs text-muted-foreground mt-2 italic">{offer.note}</p>
-              )}
             </div>
+
+            {/* LINK */}
             {offer.link && (
-              <a
+              <motion.a
+                {...tap}
                 href={offer.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-primary text-sm font-medium hover:underline"
+                className="
+                  flex items-center justify-between p-3 rounded-xl
+                  bg-background/60 border border-border/60 shadow-sm backdrop-blur-sm
+                  hover:bg-primary/10 transition-colors
+                "
               >
-                Перейти в группу ВК
-                <ExternalLink className="w-4 h-4" />
-              </a>
+                <span className="font-medium text-foreground">Перейти в группу ВК</span>
+                <ExternalLink className="w-4 h-4 text-primary" />
+              </motion.a>
             )}
-          </div>
+          </motion.div>
         ))}
       </div>
     </div>
   )
 }
+
+/* Иконка для списка карточек в InformationScreen */
+OffersSection.icon = Gift

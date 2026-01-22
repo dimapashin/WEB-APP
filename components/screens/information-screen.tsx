@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useT } from "@/lib/i18n"
-import { ChevronLeft, Wifi, Star, Gift, Heart } from "lucide-react"
+import { ChevronLeft } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 
 import { WifiSection } from "./information/wifi-section"
@@ -25,28 +25,28 @@ const INFORMATION_CARDS = [
     id: "wifi",
     title: "Wi‑Fi",
     subtitle: "Подключение к интернету",
-    icon: Wifi,
+    icon: WifiSection.icon, // см. ниже
     component: <WifiSection />,
   },
   {
     id: "feedback",
     title: "Оставить отзыв",
     subtitle: "Поделитесь впечатлениями",
-    icon: Star,
+    icon: FeedbackSection.icon,
     component: <FeedbackSection />,
   },
   {
     id: "offers",
     title: "Акции",
     subtitle: "Специальные предложения",
-    icon: Gift,
+    icon: OffersSection.icon,
     component: <OffersSection />,
   },
   {
     id: "animals",
     title: "Проживание с животными",
     subtitle: "Условия для питомцев",
-    icon: Heart,
+    icon: AnimalsSection.icon,
     component: <AnimalsSection />,
   },
 ]
@@ -65,7 +65,7 @@ export function InformationScreen({ onBack }: InformationScreenProps) {
         <motion.div
           key={activeCard}
           {...screenTransition}
-          className="min-h-screen bg-background flex flex-col"
+          className="min-h-screen bg-background flex flex-col app-screen"
         >
           {/* HEADER */}
           <div
@@ -85,8 +85,8 @@ export function InformationScreen({ onBack }: InformationScreenProps) {
 
           {/* CONTENT */}
           <motion.div
-            {...fadeInUp(0.1)}
-            className="flex-1 overflow-y-auto px-4 pt-2 pb-[env(safe-area-inset-bottom)]"
+            {...fadeInUp(0.05)}
+            className="flex-1 overflow-y-auto px-4 pb-[env(safe-area-inset-bottom)] space-y-6"
           >
             {selectedCard.component}
           </motion.div>
@@ -98,73 +98,54 @@ export function InformationScreen({ onBack }: InformationScreenProps) {
   /* ---------------------- MAIN SCREEN ---------------------- */
 
   return (
-    <motion.div
-      {...screenTransition}
-      className="min-h-screen bg-background flex flex-col"
-    >
-      {/* HEADER */}
-      <div
-        className="flex items-center justify-between px-4 pb-4"
-        style={{ paddingTop: "calc(env(safe-area-inset-top) + 1.25rem)" }}
+    <AnimatePresence mode="wait">
+      <motion.div
+        key="information-main"
+        {...screenTransition}
+        className="min-h-screen bg-background flex flex-col app-screen"
       >
-        <motion.button {...tap} onClick={onBack} className="p-2 -ml-2">
-          <ChevronLeft className="w-6 h-6 text-foreground" />
-        </motion.button>
+        {/* HEADER */}
+        <div
+          className="flex items-center justify-between px-4 pb-4"
+          style={{ paddingTop: "calc(env(safe-area-inset-top) + 1.25rem)" }}
+        >
+          <motion.button {...tap} onClick={onBack} className="p-2 -ml-2">
+            <ChevronLeft className="w-6 h-6 text-foreground" />
+          </motion.button>
 
-        <h1 className="text-lg font-semibold text-foreground">
-          {t("information.title")}
-        </h1>
+          <h1 className="text-lg font-semibold text-foreground">
+            {t("information.title")}
+          </h1>
 
-        <div className="w-10" />
-      </div>
+          <div className="w-10" />
+        </div>
 
-      {/* CONTENT */}
-      <div className="flex-1 overflow-y-auto px-4 pt-2 pb-[env(safe-area-inset-bottom)] space-y-4">
-        {INFORMATION_CARDS.map((card, index) => {
-          const isFeedback = card.id === "feedback"
-
-          return (
+        {/* CONTENT */}
+        <div className="flex-1 overflow-y-auto px-4 pb-[env(safe-area-inset-bottom)] space-y-6">
+          {INFORMATION_CARDS.map((card, index) => (
             <motion.button
               key={card.id}
               {...fadeInUp(index * 0.05)}
               {...tap}
               onClick={() => setActiveCard(card.id)}
-              className={`
-                w-full rounded-2xl p-4 flex items-center gap-4 transition-all
-                ${isFeedback
-                  ? "bg-primary/10 border border-primary/20 shadow-md backdrop-blur-sm"
-                  : "bg-card/60 border border-border/60 shadow-sm backdrop-blur-sm"
-                }
-                hover:bg-card/80
-              `}
+              className="
+                w-full rounded-2xl p-4 flex items-center gap-4
+                bg-card/60 border border-border/60 shadow-sm backdrop-blur-sm
+                hover:bg-card/80 transition-colors
+              "
             >
-              <div
-                className={`
-                  w-12 h-12 rounded-xl flex items-center justify-center shrink-0
-                  ${isFeedback ? "bg-primary/20" : "bg-primary/10"}
-                `}
-              >
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                 <card.icon className="w-6 h-6 text-primary" />
               </div>
 
               <div className="text-left flex-1">
-                <h3
-                  className={`
-                    font-medium text-foreground
-                    ${isFeedback ? "text-primary" : ""}
-                  `}
-                >
-                  {card.title}
-                </h3>
-
-                <p className="text-sm text-muted-foreground">
-                  {card.subtitle}
-                </p>
+                <h3 className="font-medium text-foreground">{card.title}</h3>
+                <p className="text-sm text-muted-foreground">{card.subtitle}</p>
               </div>
             </motion.button>
-          )
-        })}
-      </div>
-    </motion.div>
+          ))}
+        </div>
+      </motion.div>
+    </AnimatePresence>
   )
 }
