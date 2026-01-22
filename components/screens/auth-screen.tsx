@@ -109,10 +109,6 @@ export function AuthScreen({ onSuccess }) {
 
           {/* NAME */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">
-              {t("auth.name_placeholder")}
-            </label>
-
             <div className="bg-card/60 border border-border/60 rounded-xl h-12 flex items-center px-4 shadow-sm backdrop-blur-sm">
               <Input
                 ref={nameRef}
@@ -127,10 +123,6 @@ export function AuthScreen({ onSuccess }) {
 
           {/* ROOM NUMBER */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">
-              {t("auth.room_placeholder")}
-            </label>
-
             <div className={`bg-card/60 border rounded-xl h-12 flex items-center px-4 shadow-sm backdrop-blur-sm ${
               error ? "border-destructive" : "border-border/60"
             }`}>
