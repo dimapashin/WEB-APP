@@ -1,95 +1,83 @@
 "use client"
 
-import type React from "react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Calendar } from "@/components/ui/calendar"
+import { motion, AnimatePresence } from "framer-motion"
 import { useT } from "@/lib/i18n"
-import { ChevronLeft } from "lucide-react"
 
-interface CheckoutDatesScreenProps {
-  guestName: string
-  roomNumber: string
-  onConfirm: (checkInDate: string, checkoutDate: string) => void
-  onBack: () => void
-}
-
-export function CheckoutDatesScreen({ guestName, roomNumber, onConfirm, onBack }: CheckoutDatesScreenProps) {
+export function CheckoutDatesScreen({ onConfirm, onBack }) {
   const t = useT()
-  const today = new Date().toISOString().split("T")[0]
-  const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0]
+  const [checkInDate, setCheckInDate] = useState<Date | null>(null)
+  const [checkoutDate, setCheckoutDate] = useState<Date | null>(null)
 
-  const [checkInDate, setCheckInDate] = useState(today)
-  const [checkoutDate, setCheckoutDate] = useState(tomorrow)
-  const [loading, setLoading] = useState(false)
-
-  const isValid = checkInDate && checkoutDate && new Date(checkoutDate) > new Date(checkInDate)
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!isValid) return
-
-    setLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    onConfirm(checkInDate, checkoutDate)
-  }
+  const isValid = checkInDate && checkoutDate && checkoutDate > checkInDate
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="flex items-center justify-between p-4">
-        <Button onClick={onBack} variant="ghost" className="p-2 h-auto text-foreground hover:text-primary">
-          <ChevronLeft className="w-6 h-6" />
-        </Button>
-        <h1 className="text-lg font-semibold text-foreground">Уточнение дат</h1>
-        <div className="w-10" />
-      </div>
-
-      <div className="px-4 py-6 space-y-6">
-        <div className="bg-card border border-border rounded-xl p-4 space-y-2">
-          <p className="text-sm text-muted-foreground">Гость: {guestName}</p>
-          <p className="text-sm text-muted-foreground">Комната: {roomNumber}</p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <AnimatePresence>
+      {/* Затемнённый фон */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center px-6"
+        onClick={onBack}
+      >
+        {/* Модальное окно */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.25 }}
+          className="bg-card rounded-2xl p-6 w-full max-w-sm mx-auto shadow-lg backdrop-blur-sm space-y-5"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h2 className="text-lg font-semibold text-foreground text-center">
+            {t("auth.dates_title")}
+          </h2>
 
           {/* Дата заезда */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Дата заезда</label>
+            <p className="text-sm text-muted-foreground">{t("auth.checkin")}</p>
 
-            <div className="relative overflow-hidden rounded-lg border border-border">
-              <Input
-                type="date"
-                value={checkInDate}
-                onChange={(e) => setCheckInDate(e.target.value)}
-                className="bg-card text-foreground h-12 w-full px-4 appearance-none"
-              />
+            <div className="rounded-xl overflow-hidden border border-border/60 bg-card/50">
+              <div className="max-h-[260px] overflow-y-auto">
+                <Calendar
+                  mode="single"
+                  selected={checkInDate}
+                  onSelect={setCheckInDate}
+                  fromDate={new Date()}
+                />
+              </div>
             </div>
           </div>
 
           {/* Дата выезда */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Дата выезда</label>
+            <p className="text-sm text-muted-foreground">{t("auth.checkout")}</p>
 
-            <div className="relative overflow-hidden rounded-lg border border-border">
-              <Input
-                type="date"
-                value={checkoutDate}
-                onChange={(e) => setCheckoutDate(e.target.value)}
-                min={checkInDate}
-                className="bg-card text-foreground h-12 w-full px-4 appearance-none"
-              />
+            <div className="rounded-xl overflow-hidden border border-border/60 bg-card/50">
+              <div className="max-h-[260px] overflow-y-auto">
+                <Calendar
+                  mode="single"
+                  selected={checkoutDate}
+                  onSelect={setCheckoutDate}
+                  fromDate={checkInDate || new Date()}
+                />
+              </div>
             </div>
           </div>
 
+          {/* Подтвердить */}
           <Button
-            type="submit"
-            disabled={!isValid || loading}
-            className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            disabled={!isValid}
+            onClick={() => onConfirm(checkInDate, checkoutDate)}
+            className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
-            {loading ? "Подтверждение..." : "Подтвердить"}
+            {t("auth.confirm")}
           </Button>
-        </form>
-      </div>
-    </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   )
 }
