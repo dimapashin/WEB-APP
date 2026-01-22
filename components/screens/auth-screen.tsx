@@ -105,7 +105,7 @@ export function AuthScreen({ onSuccess }) {
         </div>
 
         {/* FORM */}
-        <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-5">
+        <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-5 mt-2">
 
           {/* NAME */}
           <div className="space-y-2">
