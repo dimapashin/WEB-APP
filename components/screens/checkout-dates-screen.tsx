@@ -1,125 +1,130 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { WeatherWidget } from "@/components/weather-widget"
+import { QuickActions } from "@/components/quick-actions"
+import { ServiceCards } from "@/components/service-cards"
+import { useAppStore } from "@/lib/store"
+import { getGreeting } from "@/lib/weather"
+import { useT, useLanguage } from "@/lib/i18n"
+import { LogOut, Languages } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
-import { motion, AnimatePresence, useDragControls } from "framer-motion"
-import { useT } from "@/lib/i18n"
 
-export function CheckoutDatesScreen({ onConfirm, onBack }) {
+import { motion } from "framer-motion"
+import { fadeIn, tap } from "@/lib/animations"
+
+interface MainScreenProps {
+  onOrdersClick: () => void
+  onWakeupClick: () => void
+  onAboutClick: () => void
+  onBreakfastClick: () => void
+  onConciergeClick: () => void
+  onServicesClick: () => void
+  onInformationClick: () => void
+  onLogout: () => void
+}
+
+export function MainScreen({
+  onOrdersClick,
+  onWakeupClick,
+  onAboutClick,
+  onBreakfastClick,
+  onConciergeClick,
+  onServicesClick,
+  onInformationClick,
+  onLogout,
+}: MainScreenProps) {
+  const guest = useAppStore((state) => state.guest)
+  const greeting = getGreeting()
   const t = useT()
-
-  const today = new Date()
-  const tomorrow = new Date(Date.now() + 86400000)
-
-  const [checkInDate, setCheckInDate] = useState<Date | null>(today)
-  const [checkoutDate, setCheckoutDate] = useState<Date | null>(tomorrow)
-
-  const isValid = checkInDate && checkoutDate && checkoutDate > checkInDate
-
-  const dragControls = useDragControls()
-  const sheetRef = useRef(null)
+  const { language, setLanguage } = useLanguage()
 
   return (
-    <AnimatePresence>
-      {/* Затемнённый фон */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
-        onClick={onBack}
-      />
-
-      {/* Bottom-sheet */}
-      <motion.div
-        ref={sheetRef}
-        drag="y"
-        dragControls={dragControls}
-        dragListener={false}
-        dragConstraints={{ top: 0, bottom: 0 }}
-        onDragEnd={(_, info) => {
-          if (info.offset.y > 120) onBack()
-        }}
-        initial={{ y: "100%" }}
-        animate={{ y: 0 }}
-        exit={{ y: "100%" }}
-        transition={{ duration: 0.28, ease: "easeOut" }}
-        className="
-          fixed bottom-0 left-0 right-0 z-50
-          bg-card rounded-t-3xl shadow-xl
-          max-h-[85vh] overflow-y-auto
-          pb-8 px-6 pt-4
-        "
+    <motion.div
+      key={language}          // 🔥 плавная смена языка
+      {...fadeIn}             // 🔥 fade-in при смене языка
+      className="min-h-screen bg-background app-screen flex flex-col"
+    >
+      {/* HEADER */}
+      <div
+        className="px-4 pb-4 flex items-center justify-center relative"
         style={{
-          boxShadow: "0 -20px 40px rgba(0,0,0,0.25)" // iOS‑тень сверху
+          paddingTop: "calc(env(safe-area-inset-top) + 1.25rem)",
         }}
-        onClick={(e) => e.stopPropagation()}
       >
-        {/* Grabber + Header */}
-        <div
-          className="w-full flex flex-col items-center mb-4"
-          onPointerDown={(e) => dragControls.start(e)}
+        {/* Language Switch */}
+        <motion.button
+          onClick={() => setLanguage(language === "ru" ? "en" : "ru")}
+          className="absolute left-4 h-9 w-14 border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary font-semibold transition-all duration-200 shadow-sm flex items-center justify-center gap-1 rounded-md"
+          {...tap}             // 🔥 микроанимация нажатия
         >
-          <div className="w-10 h-1.5 bg-muted-foreground/40 rounded-full mb-3" />
-          <h2 className="text-lg font-semibold text-foreground">
-            {t("auth.dates_title")}
-          </h2>
-        </div>
+          <Languages className="w-4 h-4" />
+          <span className="text-xs">{language === "ru" ? "EN" : "RU"}</span>
+        </motion.button>
 
-        {/* Дата заезда */}
-        <div className="space-y-2 mb-6">
-          <p className="text-sm text-muted-foreground">{t("auth.checkin")}</p>
+        {/* Logo */}
+        <img src="/images/vidi-logo-beige.png" alt="VIDI" className="h-12" />
 
-          <motion.div
-            key={checkInDate?.toString()}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.2 }}
-            className="rounded-xl overflow-hidden border border-border/60 bg-card/50"
-          >
-            <div className="max-h-[260px] overflow-y-auto">
-              <Calendar
-                mode="single"
-                selected={checkInDate}
-                onSelect={setCheckInDate}
-                fromDate={new Date()}
-              />
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Дата выезда */}
-        <div className="space-y-2 mb-6">
-          <p className="text-sm text-muted-foreground">{t("auth.checkout")}</p>
-
-          <motion.div
-            key={checkoutDate?.toString()}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.2 }}
-            className="rounded-xl overflow-hidden border border-border/60 bg-card/50"
-          >
-            <div className="max-h-[260px] overflow-y-auto">
-              <Calendar
-                mode="single"
-                selected={checkoutDate}
-                onSelect={setCheckoutDate}
-                fromDate={checkInDate || new Date()}
-              />
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Подтвердить */}
-        <Button
-          disabled={!isValid}
-          onClick={() => onConfirm(checkInDate, checkoutDate)}
-          className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+        {/* Logout */}
+        <motion.button
+          onClick={onLogout}
+          className="absolute right-4 h-9 p-2 text-foreground hover:text-primary transition-colors flex items-center"
+          {...tap}             // 🔥 микроанимация нажатия
         >
-          {t("auth.confirm")}
-        </Button>
-      </motion.div>
-    </AnimatePresence>
+          <LogOut className="w-5 h-5" />
+        </motion.button>
+      </div>
+
+      {/* MAIN CONTENT */}
+      <div
+        className="px-4 pb-[env(safe-area-inset-bottom)] space-y-7 main-screen-content"
+        style={{
+          marginTop: "10px",
+        }}
+      >
+        {/* Greeting + Room */}
+        <div className="space-y-1">
+          <div className="flex justify-between items-start gap-4">
+            <h1 className="text-2xl font-semibold text-foreground leading-tight">
+              {t(`main.greeting_${getGreetingType()}`)}, {guest?.name}
+            </h1>
+
+            <div className="px-2.5 py-0.5 border-2 border-primary rounded-lg inline-block whitespace-nowrap">
+              <p className="text-sm font-semibold text-primary">{guest?.roomNumber}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Weather Widget */}
+        <div className="pt-1">
+          <WeatherWidget />
+        </div>
+
+        {/* Quick Actions */}
+        <div className="space-y-3">
+          <QuickActions
+            onOrdersClick={onOrdersClick}
+            onWakeupClick={onWakeupClick}
+            onAboutClick={onAboutClick}
+          />
+        </div>
+
+        {/* Service Cards */}
+        <div className="space-y-3">
+          <ServiceCards
+            onBreakfastClick={onBreakfastClick}
+            onConciergeClick={onConciergeClick}
+            onServicesClick={onServicesClick}
+            onInformationClick={onInformationClick}
+          />
+        </div>
+      </div>
+    </motion.div>
   )
+}
+
+function getGreetingType(): "morning" | "afternoon" | "evening" {
+  const hour = new Date().getHours()
+  if (hour < 12) return "morning"
+  if (hour < 18) return "afternoon"
+  return "evening"
 }

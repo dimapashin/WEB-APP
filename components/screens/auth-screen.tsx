@@ -8,8 +8,6 @@ import { useAppStore } from "@/lib/store"
 import { useT, useLanguage } from "@/lib/i18n"
 import { CheckoutDatesScreen } from "./checkout-dates-screen"
 import { Languages } from "lucide-react"
-import { motion } from "framer-motion"
-import { tap } from "@/lib/animations"
 
 export function AuthScreen({ onSuccess }) {
   const [name, setName] = useState("")
@@ -67,6 +65,8 @@ export function AuthScreen({ onSuccess }) {
   if (step === "dates") {
     return (
       <CheckoutDatesScreen
+        guestName={name}
+        roomNumber={roomNumber}
         onConfirm={handleDatesConfirm}
         onBack={() => setStep("credentials")}
       />
@@ -74,20 +74,25 @@ export function AuthScreen({ onSuccess }) {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col app-screen px-6 pb-[env(safe-area-inset-bottom)] relative">
+    <div className="min-h-screen bg-background flex flex-col app-screen px-6 pb-[env(safe-area-inset-bottom)]">
 
-      {/* LANGUAGE SWITCH — как на главном экране */}
-      <motion.button
-        onClick={() => setLanguage(language === "ru" ? "en" : "ru")}
-        className="absolute left-6 top-[calc(env(safe-area-inset-top)+1.25rem)] h-9 w-14 border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary font-semibold transition-all duration-200 shadow-sm flex items-center justify-center gap-1 rounded-md"
-        {...tap}
+      {/* HEADER WITH LANGUAGE SWITCH */}
+      <div
+        className="flex justify-end pt-[calc(env(safe-area-inset-top)+1rem)] pb-6"
       >
-        <Languages className="w-4 h-4" />
-        <span className="text-xs">{language === "ru" ? "EN" : "RU"}</span>
-      </motion.button>
+        <Button
+          onClick={() => setLanguage(language === "ru" ? "en" : "ru")}
+          variant="outline"
+          size="icon"
+          className="h-9 w-16 border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary font-semibold shadow-sm"
+        >
+          <Languages className="w-4 h-4 mr-1" />
+          <span className="text-xs">{language === "ru" ? "EN" : "RU"}</span>
+        </Button>
+      </div>
 
       {/* CONTENT */}
-      <div className="flex-1 flex flex-col items-center justify-center overflow-y-auto space-y-10 pt-[calc(env(safe-area-inset-top)+4rem)]">
+      <div className="flex-1 flex flex-col items-center overflow-y-auto space-y-10">
 
         {/* LOGO */}
         <div className="text-center">
@@ -102,8 +107,12 @@ export function AuthScreen({ onSuccess }) {
         {/* FORM */}
         <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-5">
 
-          {/* NAME FIELD */}
-          <div>
+          {/* NAME */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">
+              {t("auth.name_placeholder")}
+            </label>
+
             <div className="bg-card/60 border border-border/60 rounded-xl h-12 flex items-center px-4 shadow-sm backdrop-blur-sm">
               <Input
                 ref={nameRef}
@@ -116,8 +125,12 @@ export function AuthScreen({ onSuccess }) {
             </div>
           </div>
 
-          {/* ROOM NUMBER FIELD */}
-          <div>
+          {/* ROOM NUMBER */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">
+              {t("auth.room_placeholder")}
+            </label>
+
             <div className={`bg-card/60 border rounded-xl h-12 flex items-center px-4 shadow-sm backdrop-blur-sm ${
               error ? "border-destructive" : "border-border/60"
             }`}>
@@ -131,7 +144,7 @@ export function AuthScreen({ onSuccess }) {
               />
             </div>
 
-            {error && <p className="text-destructive text-sm mt-2">{error}</p>}
+            {error && <p className="text-destructive text-sm">{error}</p>}
           </div>
 
           {/* AGREEMENT */}
