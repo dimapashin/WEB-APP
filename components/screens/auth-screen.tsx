@@ -95,7 +95,7 @@ export function AuthScreen({ onSuccess }) {
       <div className="flex-1 flex flex-col items-center overflow-y-auto space-y-10">
 
         {/* LOGO */}
-        <div className="text-center">
+        <div className="text-center mt-6">
           <img
             src="/images/vidi-logo-beige.png"
             alt="VIDI"
@@ -105,7 +105,7 @@ export function AuthScreen({ onSuccess }) {
         </div>
 
         {/* FORM */}
-        <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-5 mt-2">
+        <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-5 mt-4">
 
           {/* NAME */}
           <div className="space-y-2">
