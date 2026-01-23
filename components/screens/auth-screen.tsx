@@ -8,8 +8,11 @@ import { useAppStore } from "@/lib/store"
 import { useT, useLanguage } from "@/lib/i18n"
 import { Languages } from "lucide-react"
 
-// 👉 Подключаем единственную модалку
+// 👉 Модалка выбора дат
 import { CheckoutDatesModal } from "@/components/modals/checkout-dates-modal"
+
+// 👉 Словарь категорий номеров
+import { ROOM_CATEGORIES } from "@/lib/room-categories"
 
 export function AuthScreen({ onSuccess }) {
   const [name, setName] = useState("")
@@ -18,7 +21,6 @@ export function AuthScreen({ onSuccess }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
-  // 👉 состояние модалки
   const [showDatesModal, setShowDatesModal] = useState(false)
 
   const setGuest = useAppStore((s) => s.setGuest)
@@ -58,9 +60,12 @@ export function AuthScreen({ onSuccess }) {
   }
 
   const handleDatesConfirm = (checkInDate, checkoutDate) => {
+    const category = ROOM_CATEGORIES[roomNumber]
+
     setGuest({
       name: name.trim(),
       roomNumber,
+      roomCategory: category ?? "UNKNOWN",
       checkInDate,
       checkoutDate,
       telegramId: String(Date.now()),
@@ -117,9 +122,11 @@ export function AuthScreen({ onSuccess }) {
 
           {/* ROOM NUMBER */}
           <div className="space-y-2">
-            <div className={`bg-card/60 border rounded-xl h-12 flex items-center px-4 shadow-sm backdrop-blur-sm ${
-              error ? "border-destructive" : "border-border/60"
-            }`}>
+            <div
+              className={`bg-card/60 border rounded-xl h-12 flex items-center px-4 shadow-sm backdrop-blur-sm ${
+                error ? "border-destructive" : "border-border/60"
+              }`}
+            >
               <Input
                 ref={roomRef}
                 value={roomNumber}
@@ -165,7 +172,7 @@ export function AuthScreen({ onSuccess }) {
         </form>
       </div>
 
-      {/* 👉 Премиальная модалка выбора дат */}
+      {/* 👉 Модалка выбора дат */}
       {showDatesModal && (
         <CheckoutDatesModal
           onConfirm={handleDatesConfirm}

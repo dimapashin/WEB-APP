@@ -7,10 +7,72 @@ import { useAppStore } from "@/lib/store"
 import { getGreeting } from "@/lib/weather"
 import { useT, useLanguage } from "@/lib/i18n"
 import { LogOut, Languages } from "lucide-react"
-import { Button } from "@/components/ui/button"
-
 import { motion } from "framer-motion"
 import { fadeIn, tap } from "@/lib/animations"
+import { useState, useRef, useEffect } from "react"
+
+// TEMPORARY STAY WIDGET (design later)
+function StayWidget() {
+  return (
+    <div className="bg-card rounded-xl p-4 flex items-center justify-center h-[110px]">
+      <p className="text-foreground opacity-60">Stay widget placeholder</p>
+    </div>
+  )
+}
+
+// WIDGET STACK
+function WidgetStack() {
+  const widgets = [<WeatherWidget key="weather" />, <StayWidget key="stay" />]
+  const [index, setIndex] = useState(0)
+  const ref = useRef<HTMLDivElement>(null)
+
+  const onScroll = () => {
+    if (!ref.current) return
+    const scrollLeft = ref.current.scrollLeft
+    const width = ref.current.clientWidth
+    const newIndex = Math.round(scrollLeft / width)
+    setIndex(newIndex)
+  }
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    el.addEventListener("scroll", onScroll)
+    return () => el.removeEventListener("scroll", onScroll)
+  }, [])
+
+  return (
+    <div className="space-y-2">
+      <div
+        ref={ref}
+        className="
+          flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide
+          -mx-4 px-4
+        "
+        style={{ scrollBehavior: "smooth" }}
+      >
+        {widgets.map((widget, i) => (
+          <div key={i} className="snap-start w-full shrink-0">
+            {widget}
+          </div>
+        ))}
+      </div>
+
+      {/* PAGE INDICATORS */}
+      <div className="flex justify-center gap-2 pt-1">
+        {widgets.map((_, i) => (
+          <div
+            key={i}
+            className={`
+              h-2 w-2 rounded-full transition-all
+              ${i === index ? "bg-primary" : "bg-muted-foreground/30"}
+            `}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
 
 interface MainScreenProps {
   onOrdersClick: () => void
@@ -34,14 +96,13 @@ export function MainScreen({
   onLogout,
 }: MainScreenProps) {
   const guest = useAppStore((state) => state.guest)
-  const greeting = getGreeting()
   const t = useT()
   const { language, setLanguage } = useLanguage()
 
   return (
     <motion.div
-      key={language}          // 🔥 плавная смена языка
-      {...fadeIn}             // 🔥 fade-in при смене языка
+      key={language}
+      {...fadeIn}
       className="min-h-screen bg-background app-screen flex flex-col"
     >
       {/* HEADER */}
@@ -55,7 +116,7 @@ export function MainScreen({
         <motion.button
           onClick={() => setLanguage(language === "ru" ? "en" : "ru")}
           className="absolute left-4 h-9 w-14 border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary font-semibold transition-all duration-200 shadow-sm flex items-center justify-center gap-1 rounded-md"
-          {...tap}             // 🔥 микроанимация нажатия
+          {...tap}
         >
           <Languages className="w-4 h-4" />
           <span className="text-xs">{language === "ru" ? "EN" : "RU"}</span>
@@ -68,7 +129,7 @@ export function MainScreen({
         <motion.button
           onClick={onLogout}
           className="absolute right-4 h-9 p-2 text-foreground hover:text-primary transition-colors flex items-center"
-          {...tap}             // 🔥 микроанимация нажатия
+          {...tap}
         >
           <LogOut className="w-5 h-5" />
         </motion.button>
@@ -88,16 +149,28 @@ export function MainScreen({
               {t(`main.greeting_${getGreetingType()}`)}, {guest?.name}
             </h1>
 
-            <div className="px-2.5 py-0.5 border-2 border-primary rounded-lg inline-block whitespace-nowrap">
-              <p className="text-sm font-semibold text-primary">{guest?.roomNumber}</p>
+            {/* UPDATED ROOM BADGE */}
+            <div
+              className="
+                px-3 py-1
+                rounded-xl
+                bg-card/40
+                border border-border/40
+                shadow-sm
+                backdrop-blur-sm
+                inline-block
+                whitespace-nowrap
+              "
+            >
+              <p className="text-base font-semibold text-foreground">
+                {guest?.roomNumber}
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Weather Widget */}
-        <div className="pt-1">
-          <WeatherWidget />
-        </div>
+        {/* WIDGET STACK */}
+        <WidgetStack />
 
         {/* Quick Actions */}
         <div className="space-y-3">
