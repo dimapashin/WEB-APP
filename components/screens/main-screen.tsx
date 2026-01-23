@@ -10,21 +10,90 @@ import { LogOut, Languages } from "lucide-react"
 import { motion } from "framer-motion"
 import { fadeIn, tap } from "@/lib/animations"
 import { useState, useRef, useEffect } from "react"
+import { format } from "date-fns"
+import { ru } from "date-fns/locale"
 
-// TEMPORARY STAY WIDGET (design later)
-function StayWidget() {
+/* -------------------------------------------------------
+   INTERNAL INDICATORS (PALочки)
+------------------------------------------------------- */
+function Indicators({ index, total }) {
   return (
-    <div className="bg-card rounded-xl p-4 flex items-center justify-center h-[110px]">
-      <p className="text-foreground opacity-60">Stay widget placeholder</p>
+    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1">
+      {Array.from({ length: total }).map((_, i) => (
+        <div
+          key={i}
+          className={`h-0.5 w-4 rounded-full transition-all ${
+            i === index ? "bg-primary" : "bg-muted-foreground/30"
+          }`}
+        />
+      ))}
     </div>
   )
 }
 
-// WIDGET STACK
+/* -------------------------------------------------------
+   STAY WIDGET — финальный дизайн
+------------------------------------------------------- */
+function StayWidget({ index, total }) {
+  const guest = useAppStore((s) => s.guest)
+
+  if (!guest?.checkInDate || !guest?.checkoutDate || !guest?.roomCategory) {
+    return (
+      <div className="bg-card rounded-xl p-4 flex items-center justify-center h-[110px] relative">
+        <p className="text-muted-foreground text-sm">Нет данных о проживании</p>
+        <Indicators index={index} total={total} />
+      </div>
+    )
+  }
+
+  const checkIn = new Date(guest.checkInDate)
+  const checkOut = new Date(guest.checkoutDate)
+
+  const dateRange = `${format(checkIn, "d MMM", { locale: ru })} — ${format(
+    checkOut,
+    "d MMM",
+    { locale: ru }
+  )}`
+
+  const timeRange = `${format(checkIn, "HH:mm")} — ${format(
+    checkOut,
+    "HH:mm"
+  )}`
+
+  return (
+    <div className="bg-card rounded-xl p-4 flex items-center justify-between h-[110px] relative">
+      {/* LEFT — CATEGORY */}
+      <div className="flex flex-col">
+        <p className="text-xl font-semibold text-foreground">
+          {guest.roomCategory}
+        </p>
+      </div>
+
+      {/* DIVIDER */}
+      <div className="h-full border-l border-border/40 mx-4" />
+
+      {/* RIGHT — DATES */}
+      <div className="flex flex-col text-right">
+        <p className="text-sm font-medium text-foreground">{dateRange}</p>
+        <p className="text-xs text-muted-foreground">{timeRange}</p>
+      </div>
+
+      <Indicators index={index} total={total} />
+    </div>
+  )
+}
+
+/* -------------------------------------------------------
+   WIDGET STACK — встроен прямо в MainScreen
+------------------------------------------------------- */
 function WidgetStack() {
-  const widgets = [<WeatherWidget key="weather" />, <StayWidget key="stay" />]
   const [index, setIndex] = useState(0)
   const ref = useRef<HTMLDivElement>(null)
+
+  const widgets = [
+    (i: number) => <WeatherWidget index={i} total={2} />,
+    (i: number) => <StayWidget index={i} total={2} />,
+  ]
 
   const onScroll = () => {
     if (!ref.current) return
@@ -42,7 +111,7 @@ function WidgetStack() {
   }, [])
 
   return (
-    <div className="space-y-2">
+    <div className="overflow-hidden">
       <div
         ref={ref}
         className="
@@ -51,29 +120,19 @@ function WidgetStack() {
         "
         style={{ scrollBehavior: "smooth" }}
       >
-        {widgets.map((widget, i) => (
-          <div key={i} className="snap-start w-full shrink-0">
-            {widget}
-          </div>
-        ))}
-      </div>
-
-      {/* PAGE INDICATORS */}
-      <div className="flex justify-center gap-2 pt-1">
-        {widgets.map((_, i) => (
-          <div
-            key={i}
-            className={`
-              h-2 w-2 rounded-full transition-all
-              ${i === index ? "bg-primary" : "bg-muted-foreground/30"}
-            `}
-          />
+        {widgets.map((Widget, i) => (
+          <motion.div key={i} className="snap-start w-full shrink-0 relative">
+            {Widget(index)}
+          </motion.div>
         ))}
       </div>
     </div>
   )
 }
 
+/* -------------------------------------------------------
+   MAIN SCREEN
+------------------------------------------------------- */
 interface MainScreenProps {
   onOrdersClick: () => void
   onWakeupClick: () => void
