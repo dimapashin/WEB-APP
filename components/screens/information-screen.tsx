@@ -25,7 +25,7 @@ const INFORMATION_CARDS = [
     id: "wifi",
     title: "Wi‑Fi",
     subtitle: "Подключение к интернету",
-    icon: WifiSection.icon, // см. ниже
+    icon: WifiSection.icon,
     component: <WifiSection />,
   },
   {
@@ -121,7 +121,7 @@ export function InformationScreen({ onBack }: InformationScreenProps) {
         </div>
 
         {/* CONTENT */}
-        <div className="flex-1 overflow-y-auto px-4 pb-[env(safe-area-inset-bottom)] space-y-6">
+        <div className="flex-1 overflow-y-auto px-4 pb-[env(safe-area-inset-bottom)] space-y-3">
           {INFORMATION_CARDS.map((card, index) => (
             <motion.button
               key={card.id}
@@ -129,9 +129,8 @@ export function InformationScreen({ onBack }: InformationScreenProps) {
               {...tap}
               onClick={() => setActiveCard(card.id)}
               className="
-                w-full rounded-2xl p-4 flex items-center gap-4
-                bg-card/60 border border-border/60 shadow-sm backdrop-blur-sm
-                hover:bg-card/80 transition-colors
+                w-full bg-card rounded-2xl p-4 flex items-center gap-4
+                hover:bg-card/80 transition-colors shadow-sm
               "
             >
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
